@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PFEmvc;
 using PFEmvc.dto;
 using PFEmvc.Models;
+using WebApplicationPFE.Models;
 
 namespace PFEmvc.Controllers
 {
@@ -16,11 +19,16 @@ namespace PFEmvc.Controllers
     public class WorkersController : ControllerBase
     {
         private readonly DbContextApp _context;
+ 
 
         public WorkersController(DbContextApp context)
         {
             _context = context;
+            
+
         }
+        
+
         [HttpGet("getWorkers")]
         // GET: Workers
         public async Task<IActionResult> Index()

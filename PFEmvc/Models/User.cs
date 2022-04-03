@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WebApplicationPFE.Models
 {
-    public class User :IdentityUser
+    public class User 
     {
         [Key]
         public int UserId { get; set; }

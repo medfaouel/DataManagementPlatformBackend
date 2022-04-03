@@ -13,6 +13,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using WebApplicationPFE.Models;
+using Microsoft.AspNetCore.Identity;
+using PFEmvc.Models;
 
 namespace PFEmvc
 {
@@ -28,40 +31,34 @@ namespace PFEmvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.Configure<JWTConfig>(Configuration.GetSection("JWTConfig"));
             services.AddControllersWithViews();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SwaggerSetupExample", Version = "v1" });
             });
             services.AddDbContext<DbContextApp>(options => options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
+            services.AddIdentity<AppUser, IdentityRole>(opt => { }).AddEntityFrameworkStores<DbContextApp>();
             services.AddCors();
             services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
             //jwt auth
-
-            var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"].ToString());
-            services.AddAuthentication(x =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x =>
-            {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = false;
-                x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                var key = Encoding.ASCII.GetBytes(Configuration["JWTConfig:key"]);
+                options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
+                    IssuerSigningKey=new SymmetricSecurityKey(key),
+                    ValidateIssuer=false,
                     ValidateAudience=false,
-                    ClockSkew = TimeSpan.Zero
-                    
-
+                    RequireExpirationTime=true,
                 };
+
             });
+            
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -84,7 +81,7 @@ namespace PFEmvc
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

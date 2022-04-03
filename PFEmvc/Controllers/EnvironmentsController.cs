@@ -25,7 +25,7 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Environment.Include(env => env.Teams).Include(env => env.Criterias).Include(env => env.Checks).ToListAsync());
+            return Ok(await _context.Environments.Include(env => env.Teams).Include(env => env.Criterias).Include(env => env.Checks).ToListAsync());
         }
         [HttpGet("getTeams")]
         public async Task<IActionResult> Env()
@@ -57,7 +57,7 @@ namespace PFEmvc.Controllers
                 return NotFound();
             }
 
-            var Criteria = await _context.Environment
+            var Criteria = await _context.Environments
                 .FirstOrDefaultAsync(m => m.EnvId == id);
             if (Criteria == null)
             {
@@ -123,7 +123,7 @@ namespace PFEmvc.Controllers
         [HttpPut("UpdateEnvironment/{id}")]
         public async Task<IActionResult> Edit(int id, [FromBody] CreateEnv env)
         {
-            if (!(_context.Environment.Where(wrk => wrk.EnvId == id).ToList().Count() > 0))
+            if (!(_context.Environments.Where(wrk => wrk.EnvId == id).ToList().Count() > 0))
             {
                 return NotFound();
 
@@ -135,7 +135,7 @@ namespace PFEmvc.Controllers
                 try
                 {
                     
-                    var envir = _context.Environment.First(en => en.EnvId == id);
+                    var envir = _context.Environments.First(en => en.EnvId == id);
                     envir.Description = env.Description;
                     envir.EnvName = env.EnvName;
                     envir.Teams = new();
@@ -186,15 +186,15 @@ namespace PFEmvc.Controllers
         [HttpDelete("DeleteEnvironment/{id}")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var env = await _context.Environment.FindAsync(id);
-            _context.Environment.Remove(env);
+            var env = await _context.Environments.FindAsync(id);
+            _context.Environments.Remove(env);
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
         private bool EnvironmentExists(int id)
         {
-            return _context.Environment.Any(e => e.EnvId == id);
+            return _context.Environments.Any(e => e.EnvId == id);
         }
     }
 }

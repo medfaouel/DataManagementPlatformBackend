@@ -29,7 +29,7 @@ namespace PFEmvc.Controllers
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
         {
-            return Ok(await _context.Environment.ToListAsync());
+            return Ok(await _context.Environments.ToListAsync());
         }
         [HttpGet("getWorkers")]
         // GET: Workers
@@ -64,7 +64,7 @@ namespace PFEmvc.Controllers
                 Team team = new();
                 team.TeamDescription = teamenv.teamDescription;
                 team.TeamName = teamenv.teamName;
-                team.environment = _context.Environment.First(envir => envir.EnvId == teamenv.envId);
+                team.environment = _context.Environments.First(envir => envir.EnvId == teamenv.envId);
                 team.workers = new();
                 for (int i = 0; i < teamenv.workerIds.Count; i++)
                 {
@@ -100,7 +100,7 @@ namespace PFEmvc.Controllers
                     var te = _context.Teams.First(en => en.TeamId == id);
                     te.TeamDescription = team.teamDescription;
                     te.TeamName = team.teamName;
-                    te.environment = _context.Environment.First(aa => aa.EnvId == team.envId);
+                    te.environment = _context.Environments.First(aa => aa.EnvId == team.envId);
                     te.workers = new();
                     for (int i = 0; i < team.workerIds.Count; i++)
                     {

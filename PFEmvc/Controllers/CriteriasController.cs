@@ -30,7 +30,7 @@ namespace PFEmvc.Controllers
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
         {
-            return Ok(await _context.Environment.ToListAsync());
+            return Ok(await _context.Environments.ToListAsync());
         }
 
 
@@ -64,7 +64,7 @@ namespace PFEmvc.Controllers
                 Criterias crt = new();
                 crt.Description = Criteria.description;
                 crt.Name = Criteria.name;
-                crt.environment = _context.Environment.First(cr => cr.EnvId == Criteria.envId);
+                crt.environment = _context.Environments.First(cr => cr.EnvId == Criteria.envId);
                 _context.Add(crt);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -91,7 +91,7 @@ namespace PFEmvc.Controllers
                     var crt = _context.Criterias.First(re => re.CrtId == id);
                     crt.Description = Criteria.description;
                     crt.Name = Criteria.name;
-                    crt.environment = _context.Environment.First(aa => aa.EnvId == Criteria.envId);
+                    crt.environment = _context.Environments.First(aa => aa.EnvId == Criteria.envId);
                     _context.Update(crt);
                     await _context.SaveChangesAsync();
                 }

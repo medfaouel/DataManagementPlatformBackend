@@ -30,7 +30,7 @@ namespace PFEmvc.Controllers
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
         {
-            return Ok(await _context.Environment.ToListAsync());
+            return Ok(await _context.Environments.ToListAsync());
         }
 
 
@@ -65,7 +65,7 @@ namespace PFEmvc.Controllers
                 check ch = new();
                 ch.Comments = check.comments;
                 ch.Status = check.status;
-                ch.environment = _context.Environment.First(aa => aa.EnvId == check.envId);
+                ch.environment = _context.Environments.First(aa => aa.EnvId == check.envId);
                 _context.Add(ch);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -92,7 +92,7 @@ namespace PFEmvc.Controllers
                     var ch = _context.Checks.First(aa => aa.CheckId == id);
                     ch.Comments = check.comments;
                     ch.Status = check.status;
-                    ch.environment = _context.Environment.First(aa => aa.EnvId == check.envId);
+                    ch.environment = _context.Environments.First(aa => aa.EnvId == check.envId);
                     _context.Update(ch);
                     await _context.SaveChangesAsync();
                 }
