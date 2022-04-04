@@ -119,7 +119,7 @@ namespace PFEmvc.Controllers
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             return jwtTokenHandler.WriteToken(token);
 
-    }
+        }
 
     }
 }
