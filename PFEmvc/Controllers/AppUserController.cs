@@ -15,9 +15,13 @@ using WebApplicationPFE.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace PFEmvc.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class AppUserController : Controller
 
     {  
@@ -45,24 +49,25 @@ namespace PFEmvc.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    return await Task.FromResult("User has been Registered");
+                    return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.OK, "User has been Registered",null));
                 }
-                return await Task.FromResult(string.Join(",", result.Errors.Select(x => x.Description).ToArray() ));
+                return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.Error, "" , result.Errors.Select(x => x.Description).ToArray()));
             }
-            catch (Exception ex) { return await Task.FromResult(ex.Message); }
+            catch (Exception ex) { return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.Error, ex.Message, null)); }
 
         }
+        [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("GetAllUser")]
         public async Task<object> GetAllUsers()
         {
             try
             {
                 var users = _userManager.Users;
-                return await Task.FromResult(users);
+                return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.OK, "done", users));
             }
             catch (Exception ex) 
             {
-                return await Task.FromResult(ex.Message);
+                return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.Error, ex.Message, null));
             }
 
         }
@@ -73,18 +78,25 @@ namespace PFEmvc.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    
 
                     var result = await _SignInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
                     if (result.Succeeded)
                     {
-                        return await Task.FromResult("Login Successfully");
+                        var appUser = await _userManager.FindByEmailAsync(model.Email);
+                        var user = new AppUserDTO(appUser.FirstName, appUser.LastName, appUser.Email, appUser.UserName, appUser.DateCreated);
+                        user.Token = GenerateToken(appUser);
+                        
+
+                        return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.OK, "", user));
                     }
                 }
-                return await Task.FromResult("invalid Email or Password");
+
+                return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.Error, "invalid Email or Password", null));
             }
             catch (Exception ex)
             {
-                return await Task.FromResult(ex.Message);
+                return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.Error, ex.Message, null));
             }
         }
         private string GenerateToken(AppUser user)
@@ -100,8 +112,13 @@ namespace PFEmvc.Controllers
 
             }),
             Expires=DateTime.UtcNow.AddHours(12),
-            SigningCredentials=new SigningCredentials(new SymmetricSecurityKey(key),SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials=new SigningCredentials(new SymmetricSecurityKey(key),SecurityAlgorithms.HmacSha256Signature),
+            Audience=_jWTConfig.Audience,
+            Issuer=_jWTConfig.Issuer,
             };
+            var token = jwtTokenHandler.CreateToken(tokenDescriptor);
+            return jwtTokenHandler.WriteToken(token);
+
     }
 
     }

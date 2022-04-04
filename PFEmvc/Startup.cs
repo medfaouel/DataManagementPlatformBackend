@@ -20,7 +20,9 @@ using PFEmvc.Models;
 namespace PFEmvc
 {
     public class Startup
+
     {
+        private readonly string _loginOrigin="_localorigin";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -31,29 +33,64 @@ namespace PFEmvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<JWTConfig>(Configuration.GetSection("JWTConfig"));
+            services.Configure<JWTConfig>(Configuration.GetSection("ApplicationSettings"));
             services.AddControllersWithViews();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SwaggerSetupExample", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "GameHeavenAPI", Version = "v1" });
+                var securitySchema = new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                };
+
+                c.AddSecurityDefinition("Bearer", securitySchema);
+
+                var securityRequirement = new OpenApiSecurityRequirement
+                {
+                    { securitySchema, new[] { "Bearer" } }
+                };
+
+                c.AddSecurityRequirement(securityRequirement);
             });
             services.AddDbContext<DbContextApp>(options => options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
             services.AddIdentity<AppUser, IdentityRole>(opt => { }).AddEntityFrameworkStores<DbContextApp>();
-            services.AddCors();
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy(_loginOrigin, builder =>
+                {
+                    builder.AllowAnyOrigin();
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyMethod();
+                }); 
+            });
             services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
             //jwt auth
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
-                var key = Encoding.ASCII.GetBytes(Configuration["JWTConfig:key"]);
+                var key = Encoding.ASCII.GetBytes(Configuration["ApplicationSettings:key"]);
+                var issuer = Configuration["ApplicationSettings:Issuer"];
+                var audience = Configuration["ApplicationSettings:Audience"];
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey=new SymmetricSecurityKey(key),
-                    ValidateIssuer=false,
-                    ValidateAudience=false,
-                    RequireExpirationTime=true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    RequireExpirationTime = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+
                 };
 
             });
@@ -79,7 +116,7 @@ namespace PFEmvc
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            app.UseCors(_loginOrigin);
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
