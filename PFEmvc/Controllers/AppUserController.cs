@@ -119,6 +119,21 @@ namespace PFEmvc.Controllers
             }
 
         }
+        [HttpGet("GetRoles")]
+        public async Task<object> GetRoles()
+        {
+            try
+            {
+
+                var roles = _roleManager.Roles.Select(x => x.Name).ToList();
+
+                return await Task.FromResult(new ResponseModel(ResponseCode.OK, "", roles));
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(new ResponseModel(ResponseCode.Error, ex.Message, null));
+            }
+        }
         [HttpPost("Login")]
         public async Task<object> Login([FromBody] LoginBindingModel model)
         {
