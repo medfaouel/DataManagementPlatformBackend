@@ -5,6 +5,7 @@ namespace PFEmvc.Models
 {
     public class check
     {
+
         [Key]
         public int CheckId { get; set; }
         [Required]
@@ -14,5 +15,6 @@ namespace PFEmvc.Models
 
         public List<Data> Data { get; set; }
         public Environment environment { get; set; }
+        public List<Criterias> Criterias { get; set; }
     }
 }

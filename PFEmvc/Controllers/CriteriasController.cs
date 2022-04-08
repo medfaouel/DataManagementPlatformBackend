@@ -25,12 +25,17 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Criterias.Include(env => env.environment).ToListAsync());
+            return Ok(await _context.Criterias.Include(env => env.environment).Include(crt =>crt.Check).ToListAsync());
         }
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
         {
             return Ok(await _context.Environments.ToListAsync());
+        }
+        [HttpGet("getCheck")]
+        public async Task<IActionResult>Check()
+        {
+            return Ok(await _context.Checks.ToListAsync());
         }
 
 
@@ -65,6 +70,7 @@ namespace PFEmvc.Controllers
                 crt.Description = Criteria.description;
                 crt.Name = Criteria.name;
                 crt.environment = _context.Environments.First(cr => cr.EnvId == Criteria.envId);
+                crt.Check = _context.Checks.First(cr => cr.CheckId == Criteria.checkId);
                 _context.Add(crt);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -92,6 +98,7 @@ namespace PFEmvc.Controllers
                     crt.Description = Criteria.description;
                     crt.Name = Criteria.name;
                     crt.environment = _context.Environments.First(aa => aa.EnvId == Criteria.envId);
+                    crt.Check = _context.Checks.First(chec => chec.CheckId == Criteria.checkId);
                     _context.Update(crt);
                     await _context.SaveChangesAsync();
                 }

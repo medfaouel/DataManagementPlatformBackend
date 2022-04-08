@@ -10,8 +10,8 @@ using PFEmvc;
 namespace PFEmvc.Migrations
 {
     [DbContext(typeof(DbContextApp))]
-    [Migration("20220403143243_identity user")]
-    partial class identityuser
+    [Migration("20220406110011_ relation between data and check v1")]
+    partial class relationbetweendataandcheckv1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -152,12 +152,92 @@ namespace PFEmvc.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("PFEmvc.Models.AppUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers");
+                });
+
             modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
                     b.Property<int>("CrtId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("CheckId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -171,6 +251,8 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CrtId");
+
+                    b.HasIndex("CheckId");
 
                     b.HasIndex("environmentEnvId");
 
@@ -188,31 +270,24 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Contexxt")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Fors_Material_Group")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LEONI_Part")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LEONI_Part_Classification")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Month")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Part_Request")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Supplier")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("DataId");
@@ -242,6 +317,52 @@ namespace PFEmvc.Migrations
                     b.ToTable("Environments");
                 });
 
+            modelBuilder.Entity("PFEmvc.Models.Worker", b =>
+                {
+                    b.Property<int>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LoginStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("Workers");
+                });
+
             modelBuilder.Entity("PFEmvc.Models.check", b =>
                 {
                     b.Property<int>("CheckId")
@@ -265,6 +386,56 @@ namespace PFEmvc.Migrations
                     b.HasIndex("environmentEnvId");
 
                     b.ToTable("Checks");
+                });
+
+            modelBuilder.Entity("WebApplicationPFE.Models.Administrator", b =>
+                {
+                    b.Property<int>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Job")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LoginStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("Administrators");
                 });
 
             modelBuilder.Entity("WebApplicationPFE.Models.Team", b =>
@@ -292,132 +463,6 @@ namespace PFEmvc.Migrations
                     b.ToTable("Teams");
                 });
 
-            modelBuilder.Entity("WebApplicationPFE.Models.User", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DateModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("LoginStatus")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("User");
-                });
-
-            modelBuilder.Entity("PFEmvc.Models.Worker", b =>
-                {
-                    b.HasBaseType("WebApplicationPFE.Models.User");
-
-                    b.Property<int?>("TeamId")
-                        .HasColumnType("int")
-                        .HasColumnName("Worker_TeamId");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasDiscriminator().HasValue("Worker");
-                });
-
-            modelBuilder.Entity("WebApplicationPFE.Models.Administrator", b =>
-                {
-                    b.HasBaseType("WebApplicationPFE.Models.User");
-
-                    b.Property<string>("Job")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("TeamId")
-                        .HasColumnType("int");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasDiscriminator().HasValue("Administrator");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -429,7 +474,7 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("WebApplicationPFE.Models.User", null)
+                    b.HasOne("PFEmvc.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -438,7 +483,7 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("WebApplicationPFE.Models.User", null)
+                    b.HasOne("PFEmvc.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -453,7 +498,7 @@ namespace PFEmvc.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebApplicationPFE.Models.User", null)
+                    b.HasOne("PFEmvc.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -462,7 +507,7 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("WebApplicationPFE.Models.User", null)
+                    b.HasOne("PFEmvc.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -471,36 +516,26 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
+                    b.HasOne("PFEmvc.Models.check", "Check")
+                        .WithMany("Criterias")
+                        .HasForeignKey("CheckId");
+
                     b.HasOne("PFEmvc.Models.Environment", "environment")
                         .WithMany("Criterias")
                         .HasForeignKey("environmentEnvId");
+
+                    b.Navigation("Check");
 
                     b.Navigation("environment");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Data", b =>
                 {
-                    b.HasOne("PFEmvc.Models.check", null)
+                    b.HasOne("PFEmvc.Models.check", "Check")
                         .WithMany("Data")
                         .HasForeignKey("CheckId");
-                });
 
-            modelBuilder.Entity("PFEmvc.Models.check", b =>
-                {
-                    b.HasOne("PFEmvc.Models.Environment", "environment")
-                        .WithMany("Checks")
-                        .HasForeignKey("environmentEnvId");
-
-                    b.Navigation("environment");
-                });
-
-            modelBuilder.Entity("WebApplicationPFE.Models.Team", b =>
-                {
-                    b.HasOne("PFEmvc.Models.Environment", "environment")
-                        .WithMany("Teams")
-                        .HasForeignKey("environmentEnvId");
-
-                    b.Navigation("environment");
+                    b.Navigation("Check");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Worker", b =>
@@ -512,11 +547,29 @@ namespace PFEmvc.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("PFEmvc.Models.check", b =>
+                {
+                    b.HasOne("PFEmvc.Models.Environment", "environment")
+                        .WithMany("Checks")
+                        .HasForeignKey("environmentEnvId");
+
+                    b.Navigation("environment");
+                });
+
             modelBuilder.Entity("WebApplicationPFE.Models.Administrator", b =>
                 {
                     b.HasOne("WebApplicationPFE.Models.Team", null)
                         .WithMany("administrators")
                         .HasForeignKey("TeamId");
+                });
+
+            modelBuilder.Entity("WebApplicationPFE.Models.Team", b =>
+                {
+                    b.HasOne("PFEmvc.Models.Environment", "environment")
+                        .WithMany("Teams")
+                        .HasForeignKey("environmentEnvId");
+
+                    b.Navigation("environment");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Environment", b =>
@@ -530,6 +583,8 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.check", b =>
                 {
+                    b.Navigation("Criterias");
+
                     b.Navigation("Data");
                 });
 

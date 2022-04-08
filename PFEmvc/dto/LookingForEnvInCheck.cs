@@ -1,4 +1,5 @@
 ﻿using PFEmvc.Models;
+using System.Collections.Generic;
 
 namespace PFEmvc.dto
 {
@@ -8,6 +9,8 @@ namespace PFEmvc.dto
         public string comments { get; set; }
         public string status { get; set; }
         public int envId { get; set; }
+        public List<int> DataIds { get; set; }
+        public List<int> CriteriaIds { get; set; }
         public Environment Environment { get; set; }
     }
 }

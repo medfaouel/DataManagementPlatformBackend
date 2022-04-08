@@ -234,6 +234,9 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CheckId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -246,6 +249,8 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CrtId");
+
+                    b.HasIndex("CheckId");
 
                     b.HasIndex("environmentEnvId");
 
@@ -263,31 +268,24 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Contexxt")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Fors_Material_Group")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LEONI_Part")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LEONI_Part_Classification")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Month")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Part_Request")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Supplier")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("DataId");
@@ -516,18 +514,26 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
+                    b.HasOne("PFEmvc.Models.check", "Check")
+                        .WithMany("Criterias")
+                        .HasForeignKey("CheckId");
+
                     b.HasOne("PFEmvc.Models.Environment", "environment")
                         .WithMany("Criterias")
                         .HasForeignKey("environmentEnvId");
+
+                    b.Navigation("Check");
 
                     b.Navigation("environment");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Data", b =>
                 {
-                    b.HasOne("PFEmvc.Models.check", null)
+                    b.HasOne("PFEmvc.Models.check", "Check")
                         .WithMany("Data")
                         .HasForeignKey("CheckId");
+
+                    b.Navigation("Check");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Worker", b =>
@@ -575,6 +581,8 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.check", b =>
                 {
+                    b.Navigation("Criterias");
+
                     b.Navigation("Data");
                 });
 

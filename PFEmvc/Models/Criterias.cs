@@ -13,6 +13,6 @@ namespace PFEmvc.Models
         [Required]
         public string Description { get; set; }
         public Environment environment { get; set; }
-
+        public check Check { get; set; }
     }
 }

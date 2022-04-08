@@ -25,12 +25,22 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Checks.Include(env => env.environment).ToListAsync());
+            return Ok(await _context.Checks.Include(env => env.environment).Include(env => env.Criterias).Include(env => env.Data).ToListAsync());
         }
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
         {
             return Ok(await _context.Environments.ToListAsync());
+        }
+        [HttpGet("getData")]
+        public async Task<IActionResult> Data()
+        {
+            return Ok(await _context.Data.ToListAsync());
+        }
+        [HttpGet("getCriterias")]
+        public async Task<IActionResult> Criterias()
+        {
+            return Ok(await _context.Criterias.ToListAsync());
         }
 
 
@@ -66,6 +76,25 @@ namespace PFEmvc.Controllers
                 ch.Comments = check.comments;
                 ch.Status = check.status;
                 ch.environment = _context.Environments.First(aa => aa.EnvId == check.envId);
+                ch.Criterias = new();
+                
+                for (int i = 0; i < check.CriteriaIds.Count; i++)
+                {
+                    var criteria = _context.Criterias.First(cr => cr.CrtId == check.CriteriaIds[i]
+                    );
+
+                    ch.Criterias.Add(criteria);
+
+                }
+                ch.Data = new();
+                for (int i = 0; i < check.DataIds.Count; i++)
+                {
+                    var data = _context.Data.First(cr => cr.DataId == check.DataIds[i]
+                    );
+
+                    ch.Data.Add(data);
+
+                }
                 _context.Add(ch);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -93,6 +122,23 @@ namespace PFEmvc.Controllers
                     ch.Comments = check.comments;
                     ch.Status = check.status;
                     ch.environment = _context.Environments.First(aa => aa.EnvId == check.envId);
+                    ch.Criterias = new();
+                    for (int i = 0; i < check.CriteriaIds.Count; i++)
+                    {
+                        var criteria = _context.Criterias.First(cr =>
+                            cr.CrtId == check.CriteriaIds[i]
+                        );
+                        ch.Criterias.Add(criteria);
+                    }
+                    ch.Data = new();
+                    for (int i = 0; i < check.DataIds.Count; i++)
+                    {
+                        var data = _context.Data.First(cr =>
+                            cr.DataId == check.DataIds[i]
+                        );
+                        ch.Data.Add(data);
+                    }
+
                     _context.Update(ch);
                     await _context.SaveChangesAsync();
                 }
