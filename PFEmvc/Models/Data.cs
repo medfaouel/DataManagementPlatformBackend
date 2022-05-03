@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PFEmvc.Models
@@ -14,7 +15,7 @@ namespace PFEmvc.Models
 
         public string Part_Request { get; set; }
 
-        public string Contexxt { get; set; }
+        public string Context { get; set; }
 
         public string Supplier { get; set; }
   
@@ -23,6 +24,7 @@ namespace PFEmvc.Models
         public string LEONI_Part_Classification { get; set; }
 
         public check Check { get; set; }
+        public List<Criterias> Criterias { get; set; }
 
 
 

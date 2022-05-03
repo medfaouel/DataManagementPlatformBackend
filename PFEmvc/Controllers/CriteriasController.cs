@@ -25,12 +25,12 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Criterias.Include(env => env.environment).Include(crt =>crt.Check).ToListAsync());
+            return Ok(await _context.Criterias.Include(crt =>crt.Check).Include(crt=>crt.Team).ToListAsync());
         }
-        [HttpGet("getEnvs")]
-        public async Task<IActionResult> Env()
+        [HttpGet("getTeams")]
+        public async Task<IActionResult> team()
         {
-            return Ok(await _context.Environments.ToListAsync());
+            return Ok(await _context.Teams.ToListAsync());
         }
         [HttpGet("getCheck")]
         public async Task<IActionResult>Check()
@@ -69,8 +69,15 @@ namespace PFEmvc.Controllers
                 Criterias crt = new();
                 crt.Description = Criteria.description;
                 crt.Name = Criteria.name;
-                crt.environment = _context.Environments.First(cr => cr.EnvId == Criteria.envId);
+                
+                crt.Check = new();
+                if ( Criteria.checkId != 0)
+                {
+
                 crt.Check = _context.Checks.First(cr => cr.CheckId == Criteria.checkId);
+                }
+                crt.Data = _context.Data.First(cr => cr.DataId == Criteria.dataId);
+                crt.Team = _context.Teams.First(cr => cr.TeamId == Criteria.TeamId);
                 _context.Add(crt);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -97,8 +104,10 @@ namespace PFEmvc.Controllers
                     var crt = _context.Criterias.First(re => re.CrtId == id);
                     crt.Description = Criteria.description;
                     crt.Name = Criteria.name;
-                    crt.environment = _context.Environments.First(aa => aa.EnvId == Criteria.envId);
+
+                    crt.Data = _context.Data.First(cr => cr.DataId == Criteria.TeamId);
                     crt.Check = _context.Checks.First(chec => chec.CheckId == Criteria.checkId);
+                    crt.Team = _context.Teams.First(cr => cr.TeamId == Criteria.TeamId);
                     _context.Update(crt);
                     await _context.SaveChangesAsync();
                 }

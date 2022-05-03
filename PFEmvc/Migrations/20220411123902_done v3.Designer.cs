@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PFEmvc;
 
 namespace PFEmvc.Migrations
 {
     [DbContext(typeof(DbContextApp))]
-    partial class DbContextAppModelSnapshot : ModelSnapshot
+    [Migration("20220411123902_done v3")]
+    partial class donev3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,9 +229,9 @@ namespace PFEmvc.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("PFEmvc.Models.CheckDetails", b =>
+            modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
-                    b.Property<int>("CheckDetailId")
+                    b.Property<int>("CrtId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -240,32 +242,11 @@ namespace PFEmvc.Migrations
                     b.Property<string>("CDQM_feedback")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DQMS_feedback")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TopicOwner_feedback")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CheckDetailId");
-
-                    b.ToTable("CheckDetails");
-                });
-
-            modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
-                {
-                    b.Property<int>("CrtId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
                     b.Property<int?>("CheckId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("DataId")
-                        .HasColumnType("int");
+                    b.Property<string>("DQMS_feedback")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -278,11 +259,12 @@ namespace PFEmvc.Migrations
                     b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
+                    b.Property<string>("TopicOwner_feedback")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("CrtId");
 
                     b.HasIndex("CheckId");
-
-                    b.HasIndex("DataId");
 
                     b.HasIndex("TeamId");
 
@@ -395,20 +377,8 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("CDQM_comments")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CDQM_feedback")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CheckAddress")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DQMS_feedback")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("DataId")
-                        .HasColumnType("int");
 
                     b.Property<int>("DataIdentity")
                         .HasColumnType("int");
@@ -416,17 +386,13 @@ namespace PFEmvc.Migrations
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TopicOwner_feedback")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("environmentEnvId")
                         .HasColumnType("int");
 
                     b.HasKey("CheckId");
 
-                    b.HasIndex("DataId")
-                        .IsUnique()
-                        .HasFilter("[DataId] IS NOT NULL");
+                    b.HasIndex("DataIdentity")
+                        .IsUnique();
 
                     b.HasIndex("environmentEnvId");
 
@@ -565,17 +531,11 @@ namespace PFEmvc.Migrations
                         .WithMany("Criterias")
                         .HasForeignKey("CheckId");
 
-                    b.HasOne("PFEmvc.Models.Data", "Data")
-                        .WithMany("Criterias")
-                        .HasForeignKey("DataId");
-
                     b.HasOne("WebApplicationPFE.Models.Team", "Team")
                         .WithMany("criterias")
                         .HasForeignKey("TeamId");
 
                     b.Navigation("Check");
-
-                    b.Navigation("Data");
 
                     b.Navigation("Team");
                 });
@@ -593,7 +553,9 @@ namespace PFEmvc.Migrations
                 {
                     b.HasOne("PFEmvc.Models.Data", "Data")
                         .WithOne("Check")
-                        .HasForeignKey("PFEmvc.Models.check", "DataId");
+                        .HasForeignKey("PFEmvc.Models.check", "DataIdentity")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("PFEmvc.Models.Environment", "environment")
                         .WithMany("Checks")
@@ -623,8 +585,6 @@ namespace PFEmvc.Migrations
             modelBuilder.Entity("PFEmvc.Models.Data", b =>
                 {
                     b.Navigation("Check");
-
-                    b.Navigation("Criterias");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Environment", b =>

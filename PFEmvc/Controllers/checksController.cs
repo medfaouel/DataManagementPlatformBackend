@@ -15,6 +15,7 @@ namespace PFEmvc.Controllers
     [Route("api/[controller]")]
     public class checksController : Controller
     {
+        //aa
         private readonly DbContextApp _context;
 
         public checksController(DbContextApp context)
@@ -26,6 +27,39 @@ namespace PFEmvc.Controllers
         public async Task<IActionResult> Index()
         {
             return Ok(await _context.Checks.Include(env => env.environment).Include(env => env.Criterias).Include(env => env.Data).ToListAsync());
+        }
+        [HttpGet]
+        [Route("getChecksDetails")]
+        public IEnumerable<CheckDetails> getChecksDetails()
+        {
+            return _context.CheckDetails;
+        }
+        [HttpPost("CreateChecksDetails")]
+        public  IActionResult CreateChecksDetails([FromBody] CheckDetails details)
+        {
+            if (details ==null)
+            {
+                return BadRequest();
+
+            }
+            else
+            {
+                _context.CheckDetails.Add(details);
+                _context.SaveChanges();
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Message ="added successfully"
+                });
+            }
+        }
+        // For Student Detail with studentid to load by student ID  
+        // GET api/values/5  
+        [HttpGet]
+        [Route("getChecksDetails/{id}")]
+        public IEnumerable<CheckDetails> getChecksDetails(int id)
+        {
+            return _context.CheckDetails.Where(i => i.CheckDetailId == id).ToList();
         }
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
@@ -45,7 +79,7 @@ namespace PFEmvc.Controllers
 
 
 
-        [HttpGet("getChecksById/{id}")]
+        [HttpGet("getCheckById/{id}")]
         // GET: Workers/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -54,7 +88,7 @@ namespace PFEmvc.Controllers
                 return NotFound();
             }
 
-            var check = await _context.Checks
+            var check = await _context.Checks.Include(c => c.Criterias).Include(c=>c.Data).Include(c => c.environment)
                 .FirstOrDefaultAsync(m => m.CheckId == id);
             if (check == null)
             {
@@ -73,11 +107,18 @@ namespace PFEmvc.Controllers
             if (ModelState.IsValid)
             {
                 check ch = new();
-                ch.Comments = check.comments;
+                ch.CheckAddress = check.CheckAddress;
+                ch.CDQM_comments = check.CDQM_comments;
+                ch.CDQM_feedback = check.CDQM_feedback;
+                ch.DQMS_feedback = check.DQMS_feedback;
+                ch.TopicOwner_feedback = check.TopicOwner_feedback;
+
                 ch.Status = check.status;
                 ch.environment = _context.Environments.First(aa => aa.EnvId == check.envId);
                 ch.Criterias = new();
-                
+                if (check.CriteriaIds is not null)
+                {
+
                 for (int i = 0; i < check.CriteriaIds.Count; i++)
                 {
                     var criteria = _context.Criterias.First(cr => cr.CrtId == check.CriteriaIds[i]
@@ -86,15 +127,15 @@ namespace PFEmvc.Controllers
                     ch.Criterias.Add(criteria);
 
                 }
-                ch.Data = new();
-                for (int i = 0; i < check.DataIds.Count; i++)
-                {
-                    var data = _context.Data.First(cr => cr.DataId == check.DataIds[i]
-                    );
-
-                    ch.Data.Add(data);
-
                 }
+                ch.Data = new();
+                if (check.DataId != 0)
+                {
+
+                ch.Data = _context.Data.First(aa => aa.DataId == check.DataId);
+                }
+
+
                 _context.Add(ch);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -119,25 +160,30 @@ namespace PFEmvc.Controllers
                 try
                 {
                     var ch = _context.Checks.First(aa => aa.CheckId == id);
-                    ch.Comments = check.comments;
+                    ch.CheckAddress = check.CheckAddress;
+                    
                     ch.Status = check.status;
+                    ch.CDQM_comments = check.CDQM_comments;
+                    ch.CDQM_feedback = check.CDQM_feedback;
+                    ch.DQMS_feedback = check.DQMS_feedback;
+                    ch.TopicOwner_feedback = check.TopicOwner_feedback;
                     ch.environment = _context.Environments.First(aa => aa.EnvId == check.envId);
                     ch.Criterias = new();
-                    for (int i = 0; i < check.CriteriaIds.Count; i++)
+                    if (check.CriteriaIds is not null)
+                    {
+
+                        for (int i = 0; i < check.CriteriaIds.Count; i++)
                     {
                         var criteria = _context.Criterias.First(cr =>
                             cr.CrtId == check.CriteriaIds[i]
                         );
                         ch.Criterias.Add(criteria);
                     }
-                    ch.Data = new();
-                    for (int i = 0; i < check.DataIds.Count; i++)
-                    {
-                        var data = _context.Data.First(cr =>
-                            cr.DataId == check.DataIds[i]
-                        );
-                        ch.Data.Add(data);
                     }
+                    
+
+                        ch.Data =ch.Data = _context.Data.First(aa => aa.DataId == check.DataId);
+                    
 
                     _context.Update(ch);
                     await _context.SaveChangesAsync();

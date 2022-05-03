@@ -12,7 +12,6 @@ namespace PFEmvc.Models
         public string EnvName { get; set; }
         [Required]
         public string Description { get; set; }
-        public List<Criterias> Criterias { get; set; }
         public List<Team> Teams { get; set; }
         public List<check> Checks { get; set; }
 

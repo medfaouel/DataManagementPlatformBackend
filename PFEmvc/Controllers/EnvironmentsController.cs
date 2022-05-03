@@ -25,19 +25,14 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Environments.Include(env => env.Teams).Include(env => env.Criterias).Include(env => env.Checks).ToListAsync());
+            return Ok(await _context.Environments.Include(env => env.Teams).Include(env => env.Checks).ToListAsync());
         }
         [HttpGet("getTeams")]
         public async Task<IActionResult> Env()
         {
             return Ok(await _context.Teams.ToListAsync());
         }
-        [HttpGet("getCriterias")]
-        // GET: Workers
-        public async Task<IActionResult> Criterias()
-        {
-            return Ok(await _context.Criterias.ToListAsync());
-        }
+        
         [HttpGet("getChecks")]
         // GET: Workers
         public async Task<IActionResult> Checks()
@@ -88,15 +83,7 @@ namespace PFEmvc.Controllers
                     envir.Teams.Add(team);
 
                 }
-                envir.Criterias = new();
-                for (int i = 0; i < env.CriteriaIds.Count; i++)
-                {
-                    var criteria = _context.Criterias.First(cr => cr.CrtId == env.CriteriaIds[i]
-                    );
-
-                    envir.Criterias.Add(criteria);
-
-                }
+                
                 envir.Checks = new();
                 for (int i = 0; i < env.ChecksIds.Count; i++)
                 {
@@ -146,14 +133,7 @@ namespace PFEmvc.Controllers
                         );
                         envir.Teams.Add(team);
                     }
-                    envir.Criterias = new();
-                    for (int i = 0; i < env.CriteriaIds.Count; i++)
-                    {
-                        var criteria = _context.Criterias.First(cr =>
-                            cr.CrtId == env.CriteriaIds[i]
-                        );
-                        envir.Criterias.Add(criteria);
-                    }
+                   
                     envir.Checks = new();
                     for (int i = 0; i < env.ChecksIds.Count; i++)
                     {

@@ -6,7 +6,7 @@ using WebApplicationPFE.Models;
 
 namespace PFEmvc
 {
-    public class DbContextApp :IdentityDbContext<AppUser,IdentityRole, string>
+    public class DbContextApp : IdentityDbContext<AppUser, IdentityRole, string>
     {
         public DbContextApp(DbContextOptions<DbContextApp> options):base(options)
         {
@@ -19,7 +19,11 @@ namespace PFEmvc
         public DbSet<Criterias> Criterias { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<Administrator> Administrators { get; set; }
-        
+        public DbSet<CheckDetails> CheckDetails { get; set; }
+
+
+
 
     }
+
 }

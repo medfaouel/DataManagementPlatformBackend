@@ -24,7 +24,7 @@ namespace PFEmvc.Controllers
         [HttpGet("getTeams")]
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Teams.Include(env => env.environment).Include(env => env.workers).ToListAsync());
+            return Ok(await _context.Teams.Include(env => env.environment).Include(env => env.workers).Include(team => team.criterias).ToListAsync());
         }
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
@@ -36,6 +36,12 @@ namespace PFEmvc.Controllers
         public async Task<IActionResult> Workers()
         {
             return Ok(await _context.Workers.ToListAsync());
+        }
+        [HttpGet("getCriterias")]
+        // GET: Workers
+        public async Task<IActionResult> Criterias()
+        {
+            return Ok(await _context.Criterias.ToListAsync());
         }
 
         [HttpGet("getTeamById/{id}")]
@@ -74,6 +80,15 @@ namespace PFEmvc.Controllers
                     team.workers.Add(workers);
 
                 }
+                team.criterias = new();
+                for (int i = 0; i < teamenv.criteriaIds.Count; i++)
+                {
+                    var criteria = _context.Criterias.First(criteria => criteria.CrtId == teamenv.criteriaIds[i]
+                    );
+
+                    team.criterias.Add(criteria);
+
+                }
 
 
 
@@ -83,7 +98,7 @@ namespace PFEmvc.Controllers
             }
             return Ok(teamenv);
         }
-       
+
         [HttpPut("UpdateTeam/{id}")]
         public async Task<IActionResult> Edit(int id, [FromBody] CreateTeam team)
         {
@@ -101,14 +116,29 @@ namespace PFEmvc.Controllers
                     te.TeamDescription = team.teamDescription;
                     te.TeamName = team.teamName;
                     te.environment = _context.Environments.First(aa => aa.EnvId == team.envId);
+
                     te.workers = new();
-                    for (int i = 0; i < team.workerIds.Count; i++)
+                    if (team.workerIds is not null)
                     {
-                        var tea = _context.Workers.First(Workers =>
-                            Workers.UserId == team.workerIds[i]
-                        );
-                        te.workers.Add(tea);
+                        for (int i = 0; i < team.workerIds.Count; i++)
+                        {
+                            var tea = _context.Workers.First(Workers =>
+                                Workers.UserId == team.workerIds[i]
+                            );
+                            te.workers.Add(tea);
+                        }
                     }
+                    te.criterias = new();
+                    for (int i = 0; i < team.criteriaIds.Count; i++)
+                    {
+                        var criteria = _context.Criterias.First(criteria => criteria.CrtId == team.criteriaIds[i]
+                        );
+
+                        te.criterias.Add(criteria);
+
+                    }
+
+
                     _context.Update(te);
                     await _context.SaveChangesAsync();
                 }

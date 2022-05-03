@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PFEmvc;
 using PFEmvc.dto;
+using PFEmvc.Extensions;
 using PFEmvc.Models;
 
 namespace PFEmvc.Controllers
@@ -25,13 +26,19 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Data.ToListAsync());
+            return Ok(await _context.Data.Include(data=>data.Check).Include(data => data.Criterias).ToListAsync());
         }
         [HttpGet("getChecks")]
         // GET: Workers
         public async Task<IActionResult> Checks()
         {
             return Ok(await _context.Checks.ToListAsync());
+        }
+        [HttpGet("getCriterias")]
+        // GET: Workers
+        public async Task<IActionResult> Criterias()
+        {
+            return Ok(await _context.Criterias.ToListAsync());
         }
 
 
@@ -64,20 +71,29 @@ namespace PFEmvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                Data d = new();
-                d.Contexxt = data.Contexxt;
-                d.Fors_Material_Group = data.Fors_Material_Group;
-                d.LEONI_Part = data.LEONI_Part;
-                d.LEONI_Part_Classification = data.LEONI_Part_Classification;
-                d.Month = data.Month;
-                d.Part_Request = data.Part_Request;
-                d.Supplier = data.Supplier;
+                Data d = data.ToEntity();
                 d.Check = _context.Checks.First(cr => cr.CheckId == data.checkId);
                 _context.Add(d);
-                await _context.SaveChangesAsync();
+                d.Criterias = new();
+                for (int i = 0; i < data.criteriaIds.Count; i++)
+                {
+                    var criteria = _context.Criterias.First(criteria => criteria.CrtId == data.criteriaIds[i]
+                    );
+
+                    d.Criterias.Add(criteria);
+
+                }
                 return RedirectToAction(nameof(Index));
             }
             return Ok(data);
+        }
+
+        [HttpPost("CreateDataFromExcel")]
+        public async Task<IActionResult> CreateDataFromExcel([FromBody] CreateDataFromExcel data)
+        {
+            _context.AddRange(data.CreatedDataFromExcel.Select(d => d.ToEntity()));
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         // POST: Workers/Edit/5
@@ -97,7 +113,7 @@ namespace PFEmvc.Controllers
                 try
                 {
                     Data d = _context.Data.First(aa => aa.DataId == id);
-                    d.Contexxt = data.Contexxt;
+                    d.Context = data.Context;
                     d.Fors_Material_Group = data.Fors_Material_Group;
                     d.LEONI_Part = data.LEONI_Part;
                     d.LEONI_Part_Classification = data.LEONI_Part_Classification;
@@ -105,6 +121,15 @@ namespace PFEmvc.Controllers
                     d.Part_Request = data.Part_Request;
                     d.Supplier = data.Supplier;
                     d.Check = _context.Checks.First(check => check.CheckId == data.checkId);
+                    d.Criterias = new();
+                    for (int i = 0; i < data.criteriaIds.Count; i++)
+                    {
+                        var criteria = _context.Criterias.First(criteria => criteria.CrtId == data.criteriaIds[i]
+                        );
+
+                        d.Criterias.Add(criteria);
+
+                    }
 
                     _context.Update(d);
                     await _context.SaveChangesAsync();

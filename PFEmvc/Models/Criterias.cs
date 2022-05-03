@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using WebApplicationPFE.Models;
 
 namespace PFEmvc.Models
@@ -12,7 +13,9 @@ namespace PFEmvc.Models
         public string Name { get; set; }
         [Required]
         public string Description { get; set; }
-        public Environment environment { get; set; }
+        
         public check Check { get; set; }
+        public Team Team { get; set; }
+        public Data Data { get; set; }
     }
 }
