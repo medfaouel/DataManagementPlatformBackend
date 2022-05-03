@@ -21,5 +21,6 @@ namespace PFEmvc.Models
         public Data Data { get; set; }
         public Environment environment { get; set; }
         public List<Criterias> Criterias { get; set; }
+        public List<CheckDetails> CheckDetails { get; set; }
     }
 }

@@ -26,7 +26,13 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Checks.Include(env => env.environment).Include(env => env.Criterias).Include(env => env.Data).ToListAsync());
+            return Ok(await _context.Checks
+                .Include(env => env.environment)
+                .Include(env => env.Criterias)
+                .Include(env => env.Data)
+                .Include(env => env.CheckDetails)
+                .ThenInclude(details => details.Criteria)
+                .ToListAsync());
         }
         [HttpGet]
         [Route("getChecksDetails")]
@@ -59,7 +65,7 @@ namespace PFEmvc.Controllers
         [Route("getChecksDetails/{id}")]
         public IEnumerable<CheckDetails> getChecksDetails(int id)
         {
-            return _context.CheckDetails.Where(i => i.CheckDetailId == id).ToList();
+            return _context.CheckDetails.Where(i => i.CheckId == id).ToList();
         }
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
@@ -138,6 +144,20 @@ namespace PFEmvc.Controllers
 
                 _context.Add(ch);
                 await _context.SaveChangesAsync();
+                foreach (var criteria in _context.Criterias)
+                {
+                    CheckDetails checkDetails = new()
+                    {
+                        CDQM_comments = "A remplir",
+                        CDQM_feedback = "A remplir",
+                        DQMS_feedback = "A remplir",
+                        status = "A remplir",
+                        TopicOwner_feedback = "A remplir",
+                        Criteria = criteria,
+                        CheckId = check.checkId
+                    };
+                    _context.Add(checkDetails);
+                }
                 return RedirectToAction(nameof(Index));
             }
             return Ok(check);

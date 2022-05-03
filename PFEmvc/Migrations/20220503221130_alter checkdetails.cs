@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace PFEmvc.Migrations
 {
-    public partial class donev2 : Migration
+    public partial class altercheckdetails : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -197,7 +197,12 @@ namespace PFEmvc.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CheckAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DataId = table.Column<int>(type: "int", nullable: false),
+                    CDQM_comments = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DQMS_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CDQM_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TopicOwner_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DataIdentity = table.Column<int>(type: "int", nullable: false),
+                    DataId = table.Column<int>(type: "int", nullable: true),
                     environmentEnvId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -208,7 +213,7 @@ namespace PFEmvc.Migrations
                         column: x => x.DataId,
                         principalTable: "Data",
                         principalColumn: "DataId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Checks_Environments_environmentEnvId",
                         column: x => x.environmentEnvId,
@@ -274,12 +279,9 @@ namespace PFEmvc.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CDQM_comments = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DQMS_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CDQM_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TopicOwner_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CheckId = table.Column<int>(type: "int", nullable: true),
-                    TeamId = table.Column<int>(type: "int", nullable: true)
+                    TeamId = table.Column<int>(type: "int", nullable: true),
+                    DataId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -289,6 +291,12 @@ namespace PFEmvc.Migrations
                         column: x => x.CheckId,
                         principalTable: "Checks",
                         principalColumn: "CheckId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Criterias_Data_DataId",
+                        column: x => x.DataId,
+                        principalTable: "Data",
+                        principalColumn: "DataId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Criterias_Teams_TeamId",
@@ -322,6 +330,37 @@ namespace PFEmvc.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CheckDetails",
+                columns: table => new
+                {
+                    CheckDetailId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CDQM_comments = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DQMS_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CDQM_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TopicOwner_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CriteriaId = table.Column<int>(type: "int", nullable: true),
+                    CheckId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CheckDetails", x => x.CheckDetailId);
+                    table.ForeignKey(
+                        name: "FK_CheckDetails_Checks_CheckId",
+                        column: x => x.CheckId,
+                        principalTable: "Checks",
+                        principalColumn: "CheckId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CheckDetails_Criterias_CriteriaId",
+                        column: x => x.CriteriaId,
+                        principalTable: "Criterias",
+                        principalColumn: "CrtId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -370,10 +409,21 @@ namespace PFEmvc.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CheckDetails_CheckId",
+                table: "CheckDetails",
+                column: "CheckId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckDetails_CriteriaId",
+                table: "CheckDetails",
+                column: "CriteriaId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Checks_DataId",
                 table: "Checks",
                 column: "DataId",
-                unique: true);
+                unique: true,
+                filter: "[DataId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Checks_environmentEnvId",
@@ -384,6 +434,11 @@ namespace PFEmvc.Migrations
                 name: "IX_Criterias_CheckId",
                 table: "Criterias",
                 column: "CheckId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Criterias_DataId",
+                table: "Criterias",
+                column: "DataId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Criterias_TeamId",
@@ -422,7 +477,7 @@ namespace PFEmvc.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Criterias");
+                name: "CheckDetails");
 
             migrationBuilder.DropTable(
                 name: "Workers");
@@ -432,6 +487,9 @@ namespace PFEmvc.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Criterias");
 
             migrationBuilder.DropTable(
                 name: "Checks");

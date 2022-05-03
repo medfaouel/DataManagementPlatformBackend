@@ -25,7 +25,7 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Criterias.Include(crt =>crt.Check).Include(crt=>crt.Team).ToListAsync());
+            return Ok(await _context.Criterias.Include(crt => crt.Check).Include(crt => crt.Team).ToListAsync());
         }
         [HttpGet("getTeams")]
         public async Task<IActionResult> team()
@@ -33,7 +33,7 @@ namespace PFEmvc.Controllers
             return Ok(await _context.Teams.ToListAsync());
         }
         [HttpGet("getCheck")]
-        public async Task<IActionResult>Check()
+        public async Task<IActionResult> Check()
         {
             return Ok(await _context.Checks.ToListAsync());
         }
@@ -69,16 +69,30 @@ namespace PFEmvc.Controllers
                 Criterias crt = new();
                 crt.Description = Criteria.description;
                 crt.Name = Criteria.name;
-                
-                crt.Check = new();
-                if ( Criteria.checkId != 0)
-                {
 
-                crt.Check = _context.Checks.First(cr => cr.CheckId == Criteria.checkId);
+                crt.Check = new();
+                if (Criteria.checkId != 0)
+                {
+                    crt.Check = _context.Checks.FirstOrDefault(cr => cr.CheckId == Criteria.checkId);
                 }
-                crt.Data = _context.Data.First(cr => cr.DataId == Criteria.dataId);
-                crt.Team = _context.Teams.First(cr => cr.TeamId == Criteria.TeamId);
+                crt.Data = _context.Data.FirstOrDefault(cr => cr.DataId == Criteria.dataId);
+                crt.Team = _context.Teams.FirstOrDefault(cr => cr.TeamId == Criteria.TeamId);
                 _context.Add(crt);
+                await _context.SaveChangesAsync();
+                foreach (var check in _context.Checks)
+                {
+                    CheckDetails checkDetails = new()
+                    {
+                        CDQM_comments = "A remplir",
+                        CDQM_feedback = "A remplir",
+                        DQMS_feedback = "A remplir",
+                        status = "A remplir",
+                        TopicOwner_feedback = "A remplir",
+                        Criteria = crt,
+                        CheckId = check.CheckId
+                    };
+                    _context.Add(checkDetails);
+                }
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }

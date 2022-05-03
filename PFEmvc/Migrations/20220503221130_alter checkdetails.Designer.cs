@@ -10,8 +10,8 @@ using PFEmvc;
 namespace PFEmvc.Migrations
 {
     [DbContext(typeof(DbContextApp))]
-    [Migration("20220502120712_relation data criterias")]
-    partial class relationdatacriterias
+    [Migration("20220503221130_alter checkdetails")]
+    partial class altercheckdetails
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -242,6 +242,12 @@ namespace PFEmvc.Migrations
                     b.Property<string>("CDQM_feedback")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CheckId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CriteriaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("DQMS_feedback")
                         .HasColumnType("nvarchar(max)");
 
@@ -252,6 +258,10 @@ namespace PFEmvc.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("CheckDetailId");
+
+                    b.HasIndex("CheckId");
+
+                    b.HasIndex("CriteriaId");
 
                     b.ToTable("CheckDetails");
                 });
@@ -561,6 +571,21 @@ namespace PFEmvc.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PFEmvc.Models.CheckDetails", b =>
+                {
+                    b.HasOne("PFEmvc.Models.check", "Check")
+                        .WithMany("CheckDetails")
+                        .HasForeignKey("CheckId");
+
+                    b.HasOne("PFEmvc.Models.Criterias", "Criteria")
+                        .WithMany()
+                        .HasForeignKey("CriteriaId");
+
+                    b.Navigation("Check");
+
+                    b.Navigation("Criteria");
+                });
+
             modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
                     b.HasOne("PFEmvc.Models.check", "Check")
@@ -638,6 +663,8 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.check", b =>
                 {
+                    b.Navigation("CheckDetails");
+
                     b.Navigation("Criterias");
                 });
 
