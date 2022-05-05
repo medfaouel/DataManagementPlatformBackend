@@ -10,8 +10,8 @@ using PFEmvc;
 namespace PFEmvc.Migrations
 {
     [DbContext(typeof(DbContextApp))]
-    [Migration("20220503221130_alter checkdetails")]
-    partial class altercheckdetails
+    [Migration("20220504211256_relation")]
+    partial class relation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -273,9 +273,6 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CheckId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("DataId")
                         .HasColumnType("int");
 
@@ -292,8 +289,6 @@ namespace PFEmvc.Migrations
 
                     b.HasKey("CrtId");
 
-                    b.HasIndex("CheckId");
-
                     b.HasIndex("DataId");
 
                     b.HasIndex("TeamId");
@@ -307,6 +302,9 @@ namespace PFEmvc.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("CheckId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Context")
                         .HasColumnType("nvarchar(max)");
@@ -330,6 +328,8 @@ namespace PFEmvc.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("DataId");
+
+                    b.HasIndex("CheckId");
 
                     b.ToTable("Data");
                 });
@@ -419,9 +419,6 @@ namespace PFEmvc.Migrations
                     b.Property<string>("DQMS_feedback")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("DataId")
-                        .HasColumnType("int");
-
                     b.Property<int>("DataIdentity")
                         .HasColumnType("int");
 
@@ -431,16 +428,7 @@ namespace PFEmvc.Migrations
                     b.Property<string>("TopicOwner_feedback")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("environmentEnvId")
-                        .HasColumnType("int");
-
                     b.HasKey("CheckId");
-
-                    b.HasIndex("DataId")
-                        .IsUnique()
-                        .HasFilter("[DataId] IS NOT NULL");
-
-                    b.HasIndex("environmentEnvId");
 
                     b.ToTable("Checks");
                 });
@@ -588,10 +576,6 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
-                    b.HasOne("PFEmvc.Models.check", "Check")
-                        .WithMany("Criterias")
-                        .HasForeignKey("CheckId");
-
                     b.HasOne("PFEmvc.Models.Data", "Data")
                         .WithMany("Criterias")
                         .HasForeignKey("DataId");
@@ -600,11 +584,18 @@ namespace PFEmvc.Migrations
                         .WithMany("criterias")
                         .HasForeignKey("TeamId");
 
-                    b.Navigation("Check");
-
                     b.Navigation("Data");
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("PFEmvc.Models.Data", b =>
+                {
+                    b.HasOne("PFEmvc.Models.check", "Check")
+                        .WithMany("Data")
+                        .HasForeignKey("CheckId");
+
+                    b.Navigation("Check");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Worker", b =>
@@ -614,21 +605,6 @@ namespace PFEmvc.Migrations
                         .HasForeignKey("TeamId");
 
                     b.Navigation("Team");
-                });
-
-            modelBuilder.Entity("PFEmvc.Models.check", b =>
-                {
-                    b.HasOne("PFEmvc.Models.Data", "Data")
-                        .WithOne("Check")
-                        .HasForeignKey("PFEmvc.Models.check", "DataId");
-
-                    b.HasOne("PFEmvc.Models.Environment", "environment")
-                        .WithMany("Checks")
-                        .HasForeignKey("environmentEnvId");
-
-                    b.Navigation("Data");
-
-                    b.Navigation("environment");
                 });
 
             modelBuilder.Entity("WebApplicationPFE.Models.Administrator", b =>
@@ -649,15 +625,11 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.Data", b =>
                 {
-                    b.Navigation("Check");
-
                     b.Navigation("Criterias");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Environment", b =>
                 {
-                    b.Navigation("Checks");
-
                     b.Navigation("Teams");
                 });
 
@@ -665,7 +637,7 @@ namespace PFEmvc.Migrations
                 {
                     b.Navigation("CheckDetails");
 
-                    b.Navigation("Criterias");
+                    b.Navigation("Data");
                 });
 
             modelBuilder.Entity("WebApplicationPFE.Models.Team", b =>

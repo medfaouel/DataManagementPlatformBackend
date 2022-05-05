@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PFEmvc.Migrations
 {
-    public partial class altercheckdetails : Migration
+    public partial class restorationofdatabasev2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

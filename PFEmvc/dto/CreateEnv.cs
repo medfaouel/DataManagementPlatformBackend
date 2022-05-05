@@ -7,12 +7,8 @@ namespace PFEmvc.dto
     {
         public int EnvId { get; set; }
         public string EnvName { get; set; }
-
         public string Description { get; set; }
         public List<int> teamIds { get; set; }
-        
-        public List<int> ChecksIds { get; set; }
-
         public List<Team> Teams { get; set; }
     }
 }

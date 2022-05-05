@@ -25,7 +25,7 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Environments.Include(env => env.Teams).Include(env => env.Checks).ToListAsync());
+            return Ok(await _context.Environments.Include(env => env.Teams).ToListAsync());
         }
         [HttpGet("getTeams")]
         public async Task<IActionResult> Env()
@@ -83,19 +83,6 @@ namespace PFEmvc.Controllers
                     envir.Teams.Add(team);
 
                 }
-                
-                envir.Checks = new();
-                for (int i = 0; i < env.ChecksIds.Count; i++)
-                {
-                    var check = _context.Checks.First(cr => cr.CheckId == env.ChecksIds[i]
-                    );
-
-                    envir.Checks.Add(check);
-
-                }
-
-
-
                 _context.Add(envir);
 
                 await _context.SaveChangesAsync();
@@ -133,16 +120,6 @@ namespace PFEmvc.Controllers
                         );
                         envir.Teams.Add(team);
                     }
-                   
-                    envir.Checks = new();
-                    for (int i = 0; i < env.ChecksIds.Count; i++)
-                    {
-                        var check = _context.Checks.First(cr =>
-                            cr.CheckId == env.ChecksIds[i]
-                        );
-                        envir.Checks.Add(check);
-                    }
-
                     _context.Update(envir);
                     await _context.SaveChangesAsync();
                 }

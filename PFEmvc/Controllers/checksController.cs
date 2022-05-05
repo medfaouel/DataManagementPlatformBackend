@@ -27,8 +27,7 @@ namespace PFEmvc.Controllers
         public async Task<IActionResult> Index()
         {
             return Ok(await _context.Checks
-                .Include(env => env.environment)
-                .Include(env => env.Criterias)
+                   
                 .Include(env => env.Data)
                 .Include(env => env.CheckDetails)
                 .ThenInclude(details => details.Criteria)
@@ -39,6 +38,44 @@ namespace PFEmvc.Controllers
         public IEnumerable<CheckDetails> getChecksDetails()
         {
             return _context.CheckDetails;
+        }
+        [HttpPut("FillCheckDetails/{id}")]
+        public async Task<IActionResult> FillCheckDetails(int id, [FromBody] FillMasterDetailsChecks fill )
+        {
+            if (!(_context.CheckDetails.Where(wrk => wrk.CheckDetailId == id).ToList().Count() > 0))
+            {
+                return NotFound();
+            }
+
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var ch = _context.CheckDetails.First(aa => aa.CheckDetailId == id);
+
+                    ch.CDQM_comments = fill.CDQM_comments;
+                    ch.CDQM_feedback = fill.CDQM_feedback;
+                    ch.DQMS_feedback = fill.DQMS_feedback;
+                    ch.TopicOwner_feedback = fill.TopicOwner_feedback;
+
+                    _context.Update(ch);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!checkExists(fill.CheckDetailId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return NoContent();
+            }
+            return Ok(fill);
         }
         [HttpPost("CreateChecksDetails")]
         public  IActionResult CreateChecksDetails([FromBody] CheckDetails details)
@@ -94,7 +131,7 @@ namespace PFEmvc.Controllers
                 return NotFound();
             }
 
-            var check = await _context.Checks.Include(c => c.Criterias).Include(c=>c.Data).Include(c => c.environment)
+            var check = await _context.Checks.Include(c=>c.Data)
                 .FirstOrDefaultAsync(m => m.CheckId == id);
             if (check == null)
             {
@@ -119,26 +156,17 @@ namespace PFEmvc.Controllers
                 ch.DQMS_feedback = check.DQMS_feedback;
                 ch.TopicOwner_feedback = check.TopicOwner_feedback;
 
-                ch.Status = check.status;
-                ch.environment = _context.Environments.First(aa => aa.EnvId == check.envId);
-                ch.Criterias = new();
-                if (check.CriteriaIds is not null)
-                {
-
-                for (int i = 0; i < check.CriteriaIds.Count; i++)
-                {
-                    var criteria = _context.Criterias.First(cr => cr.CrtId == check.CriteriaIds[i]
-                    );
-
-                    ch.Criterias.Add(criteria);
-
-                }
-                }
+                ch.Status = "en train de";
                 ch.Data = new();
-                if (check.DataId != 0)
+                for (int i = 0; i < check.DataIds.Count; i++)
                 {
+                    var data = _context.Data.FirstOrDefault(team => team.DataId == check.DataIds[i]
+                    );
+                    if (data is not null){ 
 
-                ch.Data = _context.Data.First(aa => aa.DataId == check.DataId);
+                        ch.Data.Add(data);
+                    }
+
                 }
 
 
@@ -154,10 +182,11 @@ namespace PFEmvc.Controllers
                         status = "A remplir",
                         TopicOwner_feedback = "A remplir",
                         Criteria = criteria,
-                        CheckId = check.checkId
+                        CheckId = ch.CheckId
                     };
                     _context.Add(checkDetails);
                 }
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return Ok(check);
@@ -169,7 +198,7 @@ namespace PFEmvc.Controllers
         [HttpPut("UpdateCheck/{id}")]
         public async Task<IActionResult> Edit(int id, [FromBody] LookingForEnvInCheck check)
         {
-            if (!(_context.Checks.Where(wrk => wrk.CheckId == id).ToList().Count() > 0))
+            if (!(_context.Checks.Where(wrk => wrk.CheckId == id    ).ToList().Count() > 0))
             {
                 return NotFound();
             }
@@ -187,24 +216,14 @@ namespace PFEmvc.Controllers
                     ch.CDQM_feedback = check.CDQM_feedback;
                     ch.DQMS_feedback = check.DQMS_feedback;
                     ch.TopicOwner_feedback = check.TopicOwner_feedback;
-                    ch.environment = _context.Environments.First(aa => aa.EnvId == check.envId);
-                    ch.Criterias = new();
-                    if (check.CriteriaIds is not null)
+                    for (int i = 0; i < check.DataIds.Count; i++)
                     {
-
-                        for (int i = 0; i < check.CriteriaIds.Count; i++)
-                    {
-                        var criteria = _context.Criterias.First(cr =>
-                            cr.CrtId == check.CriteriaIds[i]
+                        var data = _context.Data.First(team => team.DataId == check.DataIds[i]
                         );
-                        ch.Criterias.Add(criteria);
-                    }
-                    }
-                    
 
-                        ch.Data =ch.Data = _context.Data.First(aa => aa.DataId == check.DataId);
-                    
+                        ch.Data.Add(data);
 
+                    }               
                     _context.Update(ch);
                     await _context.SaveChangesAsync();
                 }

@@ -17,10 +17,7 @@ namespace PFEmvc.Models
         public string TopicOwner_feedback { get; set; }
 
         public int DataIdentity { get; set; }
-        [ForeignKey("DataId")]
-        public Data Data { get; set; }
-        public Environment environment { get; set; }
-        public List<Criterias> Criterias { get; set; }
+        public List<Data> Data { get; set; }
         public List<CheckDetails> CheckDetails { get; set; }
     }
 }

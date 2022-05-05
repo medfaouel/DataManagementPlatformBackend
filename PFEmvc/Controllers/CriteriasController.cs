@@ -25,7 +25,7 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Criterias.Include(crt => crt.Check).Include(crt => crt.Team).ToListAsync());
+            return Ok(await _context.Criterias.Include(crt => crt.Team).ToListAsync());
         }
         [HttpGet("getTeams")]
         public async Task<IActionResult> team()
@@ -68,13 +68,7 @@ namespace PFEmvc.Controllers
             {
                 Criterias crt = new();
                 crt.Description = Criteria.description;
-                crt.Name = Criteria.name;
-
-                crt.Check = new();
-                if (Criteria.checkId != 0)
-                {
-                    crt.Check = _context.Checks.FirstOrDefault(cr => cr.CheckId == Criteria.checkId);
-                }
+                crt.Name = Criteria.name;     
                 crt.Data = _context.Data.FirstOrDefault(cr => cr.DataId == Criteria.dataId);
                 crt.Team = _context.Teams.FirstOrDefault(cr => cr.TeamId == Criteria.TeamId);
                 _context.Add(crt);
@@ -120,7 +114,6 @@ namespace PFEmvc.Controllers
                     crt.Name = Criteria.name;
 
                     crt.Data = _context.Data.First(cr => cr.DataId == Criteria.TeamId);
-                    crt.Check = _context.Checks.First(chec => chec.CheckId == Criteria.checkId);
                     crt.Team = _context.Teams.First(cr => cr.TeamId == Criteria.TeamId);
                     _context.Update(crt);
                     await _context.SaveChangesAsync();

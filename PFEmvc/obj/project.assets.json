@@ -7587,19 +7587,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\fehmi\\.nuget\\packages\\": {}
+    "C:\\Users\\Moham\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Hbib\\PFEmvcDotnet\\PFEmvc\\PFEmvc.csproj",
+      "projectUniqueName": "C:\\pfe\\PFEmvcDotnet\\PFEmvc\\PFEmvc.csproj",
       "projectName": "PFEmvc",
-      "projectPath": "C:\\Hbib\\PFEmvcDotnet\\PFEmvc\\PFEmvc.csproj",
-      "packagesPath": "C:\\Users\\fehmi\\.nuget\\packages\\",
-      "outputPath": "C:\\Hbib\\PFEmvcDotnet\\PFEmvc\\obj\\",
+      "projectPath": "C:\\pfe\\PFEmvcDotnet\\PFEmvc\\PFEmvc.csproj",
+      "packagesPath": "C:\\Users\\Moham\\.nuget\\packages\\",
+      "outputPath": "C:\\pfe\\PFEmvcDotnet\\PFEmvc\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\fehmi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Moham\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -7692,7 +7692,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.101\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
       }
     }
   }
