@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PFEmvc;
 
 namespace PFEmvc.Migrations
 {
     [DbContext(typeof(DbContextApp))]
-    partial class DbContextAppModelSnapshot : ModelSnapshot
+    [Migration("20220525131347_users & teams")]
+    partial class usersteams
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -276,6 +278,9 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("DataId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -288,6 +293,8 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CrtId");
+
+                    b.HasIndex("DataId");
 
                     b.HasIndex("TeamId");
 
@@ -580,9 +587,15 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
+                    b.HasOne("PFEmvc.Models.Data", "Data")
+                        .WithMany("Criterias")
+                        .HasForeignKey("DataId");
+
                     b.HasOne("WebApplicationPFE.Models.Team", "Team")
                         .WithMany("criterias")
                         .HasForeignKey("TeamId");
+
+                    b.Navigation("Data");
 
                     b.Navigation("Team");
                 });
@@ -619,6 +632,11 @@ namespace PFEmvc.Migrations
                         .HasForeignKey("environmentEnvId");
 
                     b.Navigation("environment");
+                });
+
+            modelBuilder.Entity("PFEmvc.Models.Data", b =>
+                {
+                    b.Navigation("Criterias");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Environment", b =>

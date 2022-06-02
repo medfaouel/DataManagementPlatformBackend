@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
+using WebApplicationPFE.Models;
 
 namespace PFEmvc.Models
 {
@@ -7,6 +8,7 @@ namespace PFEmvc.Models
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public Team Team { get; set; }
 
 
         public DateTime DateCreated { get; set; }

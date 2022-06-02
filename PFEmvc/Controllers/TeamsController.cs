@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PFEmvc;
 using PFEmvc.dto;
+using PFEmvc.Models;
 using WebApplicationPFE.Models;
 
 namespace PFEmvc.Controllers
@@ -16,15 +18,16 @@ namespace PFEmvc.Controllers
     public class TeamsController : ControllerBase
     {
         private readonly DbContextApp _context;
-
-        public TeamsController(DbContextApp context)
+        private readonly UserManager<AppUser> _userManager;
+        public TeamsController(DbContextApp context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
         [HttpGet("getTeams")]
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Teams.Include(env => env.environment).Include(env => env.workers).Include(team => team.criterias).ToListAsync());
+            return Ok(await _context.Teams.Include(env => env.environment).Include(env => env.Users).Include(team => team.criterias).ToListAsync());
         }
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
@@ -70,25 +73,18 @@ namespace PFEmvc.Controllers
                 Team team = new();
                 team.TeamDescription = teamenv.teamDescription;
                 team.TeamName = teamenv.teamName;
-                team.environment = _context.Environments.First(envir => envir.EnvId == teamenv.envId);
-                team.workers = new();
-                for (int i = 0; i < teamenv.workerIds.Count; i++)
+                
+                team.environment = _context.Environments.FirstOrDefault(envir => envir.EnvId == teamenv.envId);
+                team.Users = new();
+                for (int i = 0; i < teamenv.userIds.Count; i++)
                 {
-                    var workers = _context.Workers.First(worker => worker.UserId == teamenv.workerIds[i]
-                    );
-
-                    team.workers.Add(workers);
+                    var test = _userManager.Users;
+                    var users = _userManager.Users.FirstOrDefault(user => user.Id == teamenv.userIds[i]
+                    ); 
+                    team.Users.Add(users);
 
                 }
-                team.criterias = new();
-                for (int i = 0; i < teamenv.criteriaIds.Count; i++)
-                {
-                    var criteria = _context.Criterias.First(criteria => criteria.CrtId == teamenv.criteriaIds[i]
-                    );
-
-                    team.criterias.Add(criteria);
-
-                }
+                
 
 
 
@@ -117,17 +113,16 @@ namespace PFEmvc.Controllers
                     te.TeamName = team.teamName;
                     te.environment = _context.Environments.First(aa => aa.EnvId == team.envId);
 
-                    te.workers = new();
-                    if (team.workerIds is not null)
-                    {
-                        for (int i = 0; i < team.workerIds.Count; i++)
+                    te.Users = new();
+                    if (team.userIds is not null)
+                        for (int i = 0; i < team.userIds.Count; i++)
                         {
-                            var tea = _context.Workers.First(Workers =>
-                                Workers.UserId == team.workerIds[i]
+                            var users = _context.Users.First(worker => worker.Id == team.userIds[i].ToString()
                             );
-                            te.workers.Add(tea);
+
+                            te.Users.Add(users);
+
                         }
-                    }
                     te.criterias = new();
                     for (int i = 0; i < team.criteriaIds.Count; i++)
                     {

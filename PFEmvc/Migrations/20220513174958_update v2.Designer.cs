@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PFEmvc;
 
 namespace PFEmvc.Migrations
 {
     [DbContext(typeof(DbContextApp))]
-    partial class DbContextAppModelSnapshot : ModelSnapshot
+    [Migration("20220513174958_update v2")]
+    partial class updatev2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,9 +209,6 @@ namespace PFEmvc.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("TeamId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -226,8 +225,6 @@ namespace PFEmvc.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("TeamId");
 
                     b.ToTable("AspNetUsers");
                 });
@@ -276,6 +273,12 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CheckDetailsId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DataId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -288,6 +291,10 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CrtId");
+
+                    b.HasIndex("CheckDetailsId");
+
+                    b.HasIndex("DataId");
 
                     b.HasIndex("TeamId");
 
@@ -554,15 +561,6 @@ namespace PFEmvc.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PFEmvc.Models.AppUser", b =>
-                {
-                    b.HasOne("WebApplicationPFE.Models.Team", "Team")
-                        .WithMany("Users")
-                        .HasForeignKey("TeamId");
-
-                    b.Navigation("Team");
-                });
-
             modelBuilder.Entity("PFEmvc.Models.CheckDetails", b =>
                 {
                     b.HasOne("PFEmvc.Models.check", "Check")
@@ -580,9 +578,21 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
+                    b.HasOne("PFEmvc.Models.CheckDetails", "CheckDetails")
+                        .WithMany()
+                        .HasForeignKey("CheckDetailsId");
+
+                    b.HasOne("PFEmvc.Models.Data", "Data")
+                        .WithMany("Criterias")
+                        .HasForeignKey("DataId");
+
                     b.HasOne("WebApplicationPFE.Models.Team", "Team")
                         .WithMany("criterias")
                         .HasForeignKey("TeamId");
+
+                    b.Navigation("CheckDetails");
+
+                    b.Navigation("Data");
 
                     b.Navigation("Team");
                 });
@@ -621,6 +631,11 @@ namespace PFEmvc.Migrations
                     b.Navigation("environment");
                 });
 
+            modelBuilder.Entity("PFEmvc.Models.Data", b =>
+                {
+                    b.Navigation("Criterias");
+                });
+
             modelBuilder.Entity("PFEmvc.Models.Environment", b =>
                 {
                     b.Navigation("Teams");
@@ -638,8 +653,6 @@ namespace PFEmvc.Migrations
                     b.Navigation("administrators");
 
                     b.Navigation("criterias");
-
-                    b.Navigation("Users");
 
                     b.Navigation("workers");
                 });

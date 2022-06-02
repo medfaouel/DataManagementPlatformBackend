@@ -24,7 +24,6 @@ namespace PFEmvc.Models
         public string LEONI_Part_Classification { get; set; }
 
         public check Check { get; set; }
-        public List<Criterias> Criterias { get; set; }
 
 
 

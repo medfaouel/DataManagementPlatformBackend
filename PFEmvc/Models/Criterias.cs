@@ -13,8 +13,7 @@ namespace PFEmvc.Models
         public string Name { get; set; }
         [Required]
         public string Description { get; set; }
-       
+  
         public Team Team { get; set; }
-        public Data Data { get; set; }
     }
 }

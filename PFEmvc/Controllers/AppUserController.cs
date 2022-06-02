@@ -26,7 +26,8 @@ namespace PFEmvc.Controllers
     [Route("api/[controller]")]
     public class AppUserController : Controller
 
-    {  
+    {
+        private readonly DbContextApp _context;
         private readonly ILogger<AppUserController> _logger;
         private readonly JWTConfig _jWTConfig;
         private readonly UserManager<AppUser> _userManager;
@@ -41,6 +42,31 @@ namespace PFEmvc.Controllers
             _jWTConfig = jWTConfig.Value;
 
         }
+        [HttpGet("getUserById/{id}")]
+        public async Task<IActionResult> getUserById(Guid id)
+        {
+
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(m => m.Id == id.ToString());
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+        [HttpGet("ForgotPassword/{email}")]
+        public async Task<IActionResult> ForgotPassword([FromRoute] string email)
+        {
+            if (ModelState.IsValid)
+            {
+         
+            }
+            
+
+            return Ok();
+        }
+
 
         [HttpPost("RegisterUser")]
         public async Task<object> RegisterUser([FromBody] dto.identityUserModel model)
@@ -53,9 +79,11 @@ namespace PFEmvc.Controllers
 
                     return await Task.FromResult(new ResponseModel(ResponseCode.Error, "Role does not exist", null));
                 }
-                var user = new AppUser() { FirstName = model.FirstName, Email = model.Email, LastName = model.LastName,UserName=model.Email, DateCreated = DateTime.UtcNow, DateModified = DateTime.UtcNow };
+                var user = new AppUser() { FirstName = model.FirstName, Email = model.Email, LastName = model.LastName,UserName=model.Email,DateCreated = DateTime.UtcNow, DateModified = DateTime.UtcNow };
+               user.Team = _context.Teams.First(ss => ss.TeamId == model.teamId);
+                var generatedPassword = RandomPassword(8);
                 var result = await _userManager.CreateAsync(user, model.Password);
-
+                
                 if (result.Succeeded)
                 {
                     var tempUser = await _userManager.FindByEmailAsync(model.Email);
@@ -67,8 +95,37 @@ namespace PFEmvc.Controllers
             catch (Exception ex) { return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.Error, ex.Message, null)); }
 
         }
+
+        public static string RandomPassword(int size = 0)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append(RandomString(4, true));
+            builder.Append(RandomNumber(1000, 9999));
+            builder.Append(RandomString(2, false));
+            return builder.ToString();
+        }
+        public static string RandomString(int size, bool lowerCase)
+        {
+            StringBuilder builder = new StringBuilder();
+            Random random = new Random();
+            char ch;
+            for (int i = 0; i < size; i++)
+            {
+                ch = Convert.ToChar(Convert.ToInt32(Math.Floor(26 * random.NextDouble() + 65)));
+                builder.Append(ch);
+            }
+            if (lowerCase)
+                return builder.ToString().ToLower();
+            return builder.ToString();
+        }
+        public static int RandomNumber(int min, int max)
+        {
+            Random random = new Random();
+            return random.Next(min, max);
+        }
+
         // role admin
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("GetAllUser")]
         public async Task<object> GetAllUsers()
@@ -80,8 +137,8 @@ namespace PFEmvc.Controllers
                 foreach (var user in users)
                 {
                     var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
-
-                    allUserDTO.Add(new AppUserDTO(user.FirstName,user.LastName, user.Email, user.UserName, user.DateCreated, role));
+                    
+                    allUserDTO.Add(new AppUserDTO(user.FirstName,user.LastName, user.Email, user.UserName, user.DateCreated, role, user.Id));
                 }
                 return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.OK, "done", allUserDTO));
             }
@@ -92,7 +149,7 @@ namespace PFEmvc.Controllers
 
         }
         //role user
-        [Authorize(Roles ="user")]
+        [Authorize(Roles ="User,Admin")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("GetUsers")]
         public async Task<object> GetUsers()
@@ -104,9 +161,9 @@ namespace PFEmvc.Controllers
                 foreach (var user in users)
                 {
                     var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
-                    if(role == "user")
+                    if(role == "User" || role=="Admin")
                     {
-                        allUserDTO.Add(new AppUserDTO(user.FirstName, user.LastName, user.Email, user.UserName, user.DateCreated, role));
+                        allUserDTO.Add(new AppUserDTO(user.FirstName, user.LastName, user.Email, user.UserName, user.DateCreated, role, user.Id));
                     }
 
                    
@@ -148,10 +205,9 @@ namespace PFEmvc.Controllers
                     {
                         var appUser = await _userManager.FindByEmailAsync(model.Email);
                         var role = (await _userManager.GetRolesAsync(appUser)).FirstOrDefault();
-                        var user = new AppUserDTO(appUser.FirstName, appUser.LastName, appUser.Email, appUser.UserName, appUser.DateCreated,role);
+                        var user = new AppUserDTO(appUser.FirstName, appUser.LastName, appUser.Email, appUser.UserName, appUser.DateCreated, role, appUser.Id);
                         user.Token = GenerateToken(appUser,role);
-                        
-
+                       
                         return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.OK, "", user));
                     }
                 }
@@ -186,8 +242,7 @@ namespace PFEmvc.Controllers
             return jwtTokenHandler.WriteToken(token);
 
         }
-        [Authorize(Roles = "admin")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
         [HttpPost("AddRole")]
         public async Task<object> AddRole([FromBody] AddRoleBindingModel model)
         {

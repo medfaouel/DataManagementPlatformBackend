@@ -57,6 +57,7 @@ namespace PFEmvc.Controllers
 
             return Ok(Criteria);
         }
+        
 
         // POST: Workers/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -69,7 +70,7 @@ namespace PFEmvc.Controllers
                 Criterias crt = new();
                 crt.Description = Criteria.description;
                 crt.Name = Criteria.name;     
-                crt.Data = _context.Data.FirstOrDefault(cr => cr.DataId == Criteria.dataId);
+                
                 crt.Team = _context.Teams.FirstOrDefault(cr => cr.TeamId == Criteria.TeamId);
                 _context.Add(crt);
                 await _context.SaveChangesAsync();
@@ -113,7 +114,7 @@ namespace PFEmvc.Controllers
                     crt.Description = Criteria.description;
                     crt.Name = Criteria.name;
 
-                    crt.Data = _context.Data.First(cr => cr.DataId == Criteria.TeamId);
+                    
                     crt.Team = _context.Teams.First(cr => cr.TeamId == Criteria.TeamId);
                     _context.Update(crt);
                     await _context.SaveChangesAsync();

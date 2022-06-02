@@ -27,7 +27,7 @@ namespace PFEmvc.Controllers
         public async Task<IActionResult> Index()
         {
             return Ok(await _context.Checks
-                   
+
                 .Include(env => env.Data)
                 .Include(env => env.CheckDetails)
                 .ThenInclude(details => details.Criteria)
@@ -39,6 +39,7 @@ namespace PFEmvc.Controllers
         {
             return _context.CheckDetails;
         }
+        
         [HttpPut("FillCheckDetails/{id}")]
         public async Task<IActionResult> FillCheckDetails(int id, [FromBody] FillMasterDetailsChecks fill )
         {
@@ -76,6 +77,44 @@ namespace PFEmvc.Controllers
                 return NoContent();
             }
             return Ok(fill);
+        }
+        [HttpPut("FillAllCheckDetailsById/{id}")]
+        public async Task<IActionResult> FillAllCheckDetailsById(int id, [FromBody] FillAllMasterDetailsChecks fills)
+        {
+            if (!(_context.Checks.Where(wrk => wrk.CheckId == id).ToList().Count() > 0))
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+
+                    fills.FillMasterDetailsChecks.ToList().ForEach(fill =>
+                    {
+                        var checkDetails = _context.CheckDetails.Where(x => x.CheckDetailId == fill.CheckDetailId).FirstOrDefault();
+                        if(checkDetails is not null)
+                        {
+                            checkDetails.CDQM_comments = fill.CDQM_comments;
+                            checkDetails.CDQM_feedback = fill.CDQM_feedback;
+                            checkDetails.TopicOwner_feedback = fill.TopicOwner_feedback;
+                            checkDetails.DQMS_feedback = fill.DQMS_feedback;
+                            _context.Update(checkDetails);
+                            _context.SaveChanges();
+                        }
+                    });
+                    
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    
+                        throw;
+                    
+                }
+                return NoContent();
+            }
+            return Ok();
         }
         [HttpPost("CreateChecksDetails")]
         public  IActionResult CreateChecksDetails([FromBody] CheckDetails details)
@@ -120,7 +159,30 @@ namespace PFEmvc.Controllers
             return Ok(await _context.Criterias.ToListAsync());
         }
 
+        [HttpGet("getAllCheckdetailsByCheckId/{id}")]
+        // GET: Workers/Details/5
+        public async Task<IActionResult> getAllCheckdetailsByCheckId(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+                var checkDetails = _context.CheckDetails
+                     .OrderBy(team => team.CheckId).Include(c => c.Criteria).Include(c => c.Check).Where(team =>team.CheckId==id);
+                
+
+            
+
+           // var check = await _context.CheckDetails.Include(c => c.Criteria).Include(c => c.Check)
+            //    .FirstOrDefaultAsync(m => m.CheckDetailId == id);
+            //if (check == null)
+           // {
+            //    return NotFound();
+            //}
+
+            return Ok(checkDetails);
+        }
 
         [HttpGet("getCheckById/{id}")]
         // GET: Workers/Details/5
@@ -181,7 +243,7 @@ namespace PFEmvc.Controllers
                         DQMS_feedback = "A remplir",
                         status = "A remplir",
                         TopicOwner_feedback = "A remplir",
-                        Criteria = criteria,
+                        Criteria = criteria,    
                         CheckId = ch.CheckId
                     };
                     _context.Add(checkDetails);
@@ -216,14 +278,17 @@ namespace PFEmvc.Controllers
                     ch.CDQM_feedback = check.CDQM_feedback;
                     ch.DQMS_feedback = check.DQMS_feedback;
                     ch.TopicOwner_feedback = check.TopicOwner_feedback;
-                    for (int i = 0; i < check.DataIds.Count; i++)
-                    {
-                        var data = _context.Data.First(team => team.DataId == check.DataIds[i]
-                        );
+                    if(check.DataIds is not null){
+                        for (int i = 0; i < check.DataIds.Count; i++)
+                        {
+                            var data = _context.Data.First(team => team.DataId == check.DataIds[i]
+                            );
 
-                        ch.Data.Add(data);
+                            ch.Data.Add(data);
 
-                    }               
+                        }
+                    }
+                                   
                     _context.Update(ch);
                     await _context.SaveChangesAsync();
                 }

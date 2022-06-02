@@ -5,6 +5,6 @@ namespace PFEmvc.dto
 {
     public class CreateDataFromExcel
     {
-        public IList<createData> CreatedDataFromExcel{ get; set; }
+        public List<createData> CreatedDataFromExcel{ get; set; }
     }
 }

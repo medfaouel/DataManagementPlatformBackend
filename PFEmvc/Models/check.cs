@@ -16,7 +16,6 @@ namespace PFEmvc.Models
         public string CDQM_feedback { get; set; }
         public string TopicOwner_feedback { get; set; }
 
-        public int DataIdentity { get; set; }
         public List<Data> Data { get; set; }
         public List<CheckDetails> CheckDetails { get; set; }
     }

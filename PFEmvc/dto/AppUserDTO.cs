@@ -4,7 +4,7 @@ namespace PFEmvc.dto
 {
     public class AppUserDTO
     {
-        public AppUserDTO(string firstName, string lastName, string email, string userName,DateTime dateCreated,string role )
+        public AppUserDTO(string firstName, string lastName, string email, string userName,DateTime dateCreated,string role,string id)
         {
             FirstName = firstName;
             LastName =lastName;
@@ -12,8 +12,10 @@ namespace PFEmvc.dto
             UserName =userName;
             DateCreated = dateCreated;
             Role = role;
+            Id = id;
 
         }
+        public string Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }

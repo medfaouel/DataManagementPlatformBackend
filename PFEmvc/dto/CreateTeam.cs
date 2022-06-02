@@ -10,7 +10,7 @@ namespace PFEmvc.dto
         public string teamName { get; set; }
         public string teamDescription { get; set; }
         public int envId { get; set; }
-        public List<int> workerIds { get; set; }
+        public List<string> userIds { get; set; }
         public List<int> criteriaIds { get; set; }
         public Environment Env { get; set; }
         

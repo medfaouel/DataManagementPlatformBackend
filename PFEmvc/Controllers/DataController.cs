@@ -26,7 +26,7 @@ namespace PFEmvc.Controllers
         // GET: Workers
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Data.Include(data=>data.Check).Include(data => data.Criterias).ToListAsync());
+            return Ok(await _context.Data.Include(data => data.Check).ToListAsync());
         }
         [HttpGet("getChecks")]
         // GET: Workers
@@ -40,9 +40,6 @@ namespace PFEmvc.Controllers
         {
             return Ok(await _context.Criterias.ToListAsync());
         }
-
-
-
 
         [HttpGet("getDataById/{id}")]
         // GET: Workers/Details/5
@@ -67,35 +64,73 @@ namespace PFEmvc.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost("CreateData")]
-        public async Task<IActionResult> Create([FromBody] createData data)
+        public async Task<IActionResult> CreateData([FromBody] createData data)
         {
             if (ModelState.IsValid)
             {
                 Data d = data.ToEntity();
-                d.Check = _context.Checks.First(cr => cr.CheckId == data.checkId);
                 _context.Add(d);
-                d.Criterias = new();
-                for (int i = 0; i < data.criteriaIds.Count; i++)
+                await _context.SaveChangesAsync();
+                List<Criterias> criterias = _context.Criterias.ToList();
+         
+                check check = new()
                 {
-                    var criteria = _context.Criterias.First(criteria => criteria.CrtId == data.criteriaIds[i]
-                    );
+                    CheckAddress = " A remplir",
+                    Status = "en train de",
+                    CheckDetails = criterias.Select(criteria => new CheckDetails()
+                    {
+                        Criteria = criteria,
+                        CDQM_comments = " A remplir",
+                        CDQM_feedback = " A remplir",
+                        DQMS_feedback = " A remplir",
+                        TopicOwner_feedback = " A remplir"
+                    }).ToList(),
+                    Data = new List<Data>()
+                        {
+                            d
+                        }
+                };
 
-                    d.Criterias.Add(criteria);
-
-                }
+                _context.Add(check);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return Ok(data);
         }
-
         [HttpPost("CreateDataFromExcel")]
         public async Task<IActionResult> CreateDataFromExcel([FromBody] CreateDataFromExcel data)
         {
-            _context.AddRange(data.CreatedDataFromExcel.Select(d => d.ToEntity()));
+            var dataList = data.CreatedDataFromExcel.Select(d => d.ToEntity()).ToList();
+            _context.AddRange(dataList);
             await _context.SaveChangesAsync();
+            dataList.ForEach(data =>
+            {
+                List<Criterias> criterias = _context.Criterias.ToList();
+               
+                check check = new()
+                {
+                    CheckAddress = " A remplir",
+                    Status = "en train de",
+                    CheckDetails = criterias.Select(criteria => new CheckDetails()
+                    {
+                        Criteria = criteria,
+                        CDQM_comments = " A remplir",
+                        CDQM_feedback = " A remplir",
+                        DQMS_feedback = " A remplir",
+                        TopicOwner_feedback = " A remplir"
+                    }).ToList(),
+                    Data = new List<Data>()
+                        {
+                            data
+                        }
+                };
+
+                _context.Add(check);
+                _context.SaveChanges();
+            });
+
             return Ok();
         }
-
         // POST: Workers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -112,7 +147,7 @@ namespace PFEmvc.Controllers
             {
                 try
                 {
-                    Data d = _context.Data.First(aa => aa.DataId == id);
+                    Data d = _context.Data.FirstOrDefault(aa => aa.DataId == id);
                     d.Context = data.Context;
                     d.Fors_Material_Group = data.Fors_Material_Group;
                     d.LEONI_Part = data.LEONI_Part;
@@ -120,19 +155,9 @@ namespace PFEmvc.Controllers
                     d.Month = data.Month;
                     d.Part_Request = data.Part_Request;
                     d.Supplier = data.Supplier;
-                    d.Check = _context.Checks.First(check => check.CheckId == data.checkId);
-                    d.Criterias = new();
-                    for (int i = 0; i < data.criteriaIds.Count; i++)
-                    {
-                        var criteria = _context.Criterias.First(criteria => criteria.CrtId == data.criteriaIds[i]
-                        );
-
-                        d.Criterias.Add(criteria);
-
-                    }
-
                     _context.Update(d);
                     await _context.SaveChangesAsync();
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -161,7 +186,7 @@ namespace PFEmvc.Controllers
         }
 
         private bool DataExists(int id)
-        { 
+        {
             return _context.Data.Any(e => e.DataId == id);
         }
     }
