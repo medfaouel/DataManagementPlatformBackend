@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using WebApplicationPFE.Models;
 using Microsoft.AspNetCore.Identity;
 using PFEmvc.Models;
+using PFEmvc.Models.Enums;
 
 namespace PFEmvc
 {
@@ -30,8 +31,10 @@ namespace PFEmvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<SMTPConfigModel>(Configuration.GetSection("SMTPConfig"));
             services.Configure<JWTConfig>(Configuration.GetSection("ApplicationSettings"));
             services.AddControllersWithViews();
+            services.AddSingleton<IEmailSender, EmailSender>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "GameHeavenAPI", Version = "v1" });
@@ -50,6 +53,7 @@ namespace PFEmvc
                 };
 
                 c.AddSecurityDefinition("Bearer", securitySchema);
+                
 
                 var securityRequirement = new OpenApiSecurityRequirement
                 {
@@ -59,7 +63,12 @@ namespace PFEmvc
                 c.AddSecurityRequirement(securityRequirement);
             });
             services.AddDbContext<DbContextApp>(options => options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
-            services.AddIdentity<AppUser, IdentityRole>(opt => { }).AddEntityFrameworkStores<DbContextApp>();
+            services.AddIdentity<AppUser, IdentityRole>(opt =>
+            
+            {
+                opt.User.RequireUniqueEmail = true;
+                opt.SignIn.RequireConfirmedEmail = true;
+            }).AddEntityFrameworkStores<DbContextApp>().AddDefaultTokenProviders();
             services.AddCors(opt =>
             {
                 opt.AddPolicy(_loginOrigin, builder =>
@@ -69,6 +78,7 @@ namespace PFEmvc
                     builder.AllowAnyMethod();
                 }); 
             });
+            
             services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PFEmvc;
+using System.IO;
 using PFEmvc.dto;
 using PFEmvc.Models;
 using WebApplicationPFE.Models;
@@ -19,6 +20,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using PFEmvc.Models.Enums;
 using System.Security.Claims;
+using Microsoft.Extensions.Configuration;
+using System.Web;
 
 namespace PFEmvc.Controllers
 {
@@ -27,19 +30,31 @@ namespace PFEmvc.Controllers
     public class AppUserController : Controller
 
     {
+        private readonly IConfiguration _config;
         private readonly DbContextApp _context;
         private readonly ILogger<AppUserController> _logger;
         private readonly JWTConfig _jWTConfig;
+        
+        private readonly IOptions<EmailOptionsDTO> _emailOptions;
+        private readonly SMTPConfigModel _smtpModel;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _SignInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public AppUserController(DbContextApp context, IOptions<JWTConfig> jWTConfig, RoleManager<IdentityRole> roleManager, ILogger<AppUserController> logger, UserManager<AppUser> userManager, SignInManager<AppUser> SignInManager)
+        
+        private readonly IEmailSender _emailSender;
+        public AppUserController(IOptions<EmailOptionsDTO> emailOptions, IEmailSender emailSender,IConfiguration config, DbContextApp context, IOptions<JWTConfig> jWTConfig, RoleManager<IdentityRole> roleManager, ILogger<AppUserController> logger, UserManager<AppUser> userManager, SignInManager<AppUser> SignInManager)
         {
             _roleManager = roleManager;
             _logger = logger;
             _userManager = userManager;
             _SignInManager = SignInManager;
+            _emailOptions = emailOptions;
             _jWTConfig = jWTConfig.Value;
+            _config = config;
+            _emailSender = emailSender;
+            
+
+
 
         }
         [HttpGet("getUserById/{id}")]
@@ -55,18 +70,57 @@ namespace PFEmvc.Controllers
 
             return Ok(user);
         }
-        [HttpGet("ForgotPassword/{email}")]
-        public async Task<IActionResult> ForgotPassword([FromRoute] string email)
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-            if (ModelState.IsValid)
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null || user.EmailConfirmed)
             {
-         
+                
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var changePasswordUrl = "http://localhost:4200/ChangePassword";
+
+                var uriBuilder = new UriBuilder(changePasswordUrl);
+                var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+                query["token"] = token;
+                query["userid"] = user.Id;
+                uriBuilder.Query = query.ToString();
+                var urlString = uriBuilder.ToString();
+
+                var emailBody = $"Click on link to change password </br>{urlString}";
+                EmailSender.SendPasswordResetEmail(urlString, model.Email);
+
+                return Ok();
             }
-            
 
-            return Ok();
+            return Unauthorized();
         }
+        [HttpPost("ChangePassword")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            var resetPasswordResult = await _userManager.ResetPasswordAsync(user, Uri.UnescapeDataString(model.Token), model.Password);
 
+            if (resetPasswordResult.Succeeded)
+            {
+                return Ok();
+            }
+
+            return Unauthorized();
+        }
+        [HttpPost("ConfirmEmail")]
+
+        public async Task<IActionResult> ConfirmEmail( ConfirmEmailViewModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            var result = await _userManager.ConfirmEmailAsync(user, model.Token);
+
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            return BadRequest();
+        }         
 
         [HttpPost("RegisterUser")]
         public async Task<object> RegisterUser([FromBody] dto.identityUserModel model)
@@ -80,14 +134,32 @@ namespace PFEmvc.Controllers
                     return await Task.FromResult(new ResponseModel(ResponseCode.Error, "Role does not exist", null));
                 }
                 var user = new AppUser() { FirstName = model.FirstName, Email = model.Email, LastName = model.LastName,UserName=model.Email,DateCreated = DateTime.UtcNow, DateModified = DateTime.UtcNow };
-               user.Team = _context.Teams.First(ss => ss.TeamId == model.teamId);
                 var generatedPassword = RandomPassword(8);
                 var result = await _userManager.CreateAsync(user, model.Password);
                 
                 if (result.Succeeded)
                 {
+                    
                     var tempUser = await _userManager.FindByEmailAsync(model.Email);
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(tempUser);
+                    var confirmationLink = Url.Action("ConfirmEmail", "", new { userId = user.Id, token = token },Request.Scheme);
+                    var uriBuilder = new UriBuilder(_config["ReturnPaths:ConfirmEmail"]);
+                    var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+                    query["token"] = token;
+                    query["userid"] = tempUser.Id;
+                    uriBuilder.Query = query.ToString();
+                    var urlString = uriBuilder.ToString();
+                    var senderEmail = _config["ReturnPaths:SenderEmail"];
+                    _logger.Log(LogLevel.Warning, confirmationLink);
+                    EmailSender.SendMail(urlString, model.Email);
+                    
+
+
+                    
+                    //await _emailSender.SendEmailAsync(senderEmail, tempUser.Email, "Confirm your email address", urlString);
                     await _userManager.AddToRoleAsync(tempUser, model.Role);
+                    
+
                     return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.OK, "User has been Registered",null));
                 }
                 return await Task.FromResult(new ResponseModel(Models.Enums.ResponseCode.Error, "" , result.Errors.Select(x => x.Description).ToArray()));
@@ -204,6 +276,7 @@ namespace PFEmvc.Controllers
                     if (result.Succeeded)
                     {
                         var appUser = await _userManager.FindByEmailAsync(model.Email);
+                        
                         var role = (await _userManager.GetRolesAsync(appUser)).FirstOrDefault();
                         var user = new AppUserDTO(appUser.FirstName, appUser.LastName, appUser.Email, appUser.UserName, appUser.DateCreated, role, appUser.Id);
                         user.Token = GenerateToken(appUser,role);
