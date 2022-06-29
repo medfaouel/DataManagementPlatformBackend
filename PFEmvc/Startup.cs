@@ -66,8 +66,7 @@ namespace PFEmvc
             services.AddIdentity<AppUser, IdentityRole>(opt =>
             
             {
-                opt.User.RequireUniqueEmail = true;
-                opt.SignIn.RequireConfirmedEmail = true;
+                
             }).AddEntityFrameworkStores<DbContextApp>().AddDefaultTokenProviders();
             services.AddCors(opt =>
             {

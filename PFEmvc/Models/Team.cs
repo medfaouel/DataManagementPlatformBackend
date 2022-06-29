@@ -17,5 +17,6 @@ namespace WebApplicationPFE.Models
         public List<Worker> workers { get; set; }
         public List<Administrator> administrators { get; set; }
         public List<Criterias> criterias { get; set; }
+        public List<check> checks { get; set; }
     }
 }

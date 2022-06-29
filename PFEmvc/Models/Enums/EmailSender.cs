@@ -24,11 +24,17 @@ namespace PFEmvc.Models.Enums
                 await client.SendMailAsync(mailMessage);
             }
         }
-        public static void SendMail(string emailbody,string email)
+        public static void SendMail(string emailbody,string email,string password)
         {
             MailMessage mailMessage = new MailMessage("mohamedhabibapex@gmail.com", email);
             mailMessage.Subject = "Confirm your Account";
-            mailMessage.Body = emailbody;
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("Hello, this is your password " + password+", and this is the link for your email confirmation ");
+            stringBuilder.Append(emailbody);
+            
+
+            mailMessage.Body = stringBuilder.ToString();
+
             SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587);
             smtpClient.Credentials = new System.Net.NetworkCredential()
             {
@@ -53,6 +59,24 @@ namespace PFEmvc.Models.Enums
                 Password = "pihmhigucvtxxnqj"
             };
 
+            smtpClient.EnableSsl = true;
+            smtpClient.Send(mailMessage);
+        }
+        public static void SendEmailToTopicOwner(string dataName, string CriteriaName, string email)
+        {
+            MailMessage mailMessage = new MailMessage("mohamedhabibapex@gmail.com", email);
+            mailMessage.Subject = "Problem In Check of "+ dataName;
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("There is a conflict in data " + dataName + ", and specifically in criteria :" + CriteriaName +", please check it as soon as possible");
+
+            mailMessage.Body = stringBuilder.ToString();
+
+            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587);
+            smtpClient.Credentials = new System.Net.NetworkCredential()
+            {
+                UserName = "mohamedhabibapex@gmail.com",
+                Password = "pihmhigucvtxxnqj"
+            };
             smtpClient.EnableSsl = true;
             smtpClient.Send(mailMessage);
         }

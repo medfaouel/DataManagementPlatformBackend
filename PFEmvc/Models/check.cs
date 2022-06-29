@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using WebApplicationPFE.Models;
 
 namespace PFEmvc.Models
 {
@@ -18,5 +19,6 @@ namespace PFEmvc.Models
 
         public List<Data> Data { get; set; }
         public List<CheckDetails> CheckDetails { get; set; }
+        public Team Team { get; set; }
     }
 }

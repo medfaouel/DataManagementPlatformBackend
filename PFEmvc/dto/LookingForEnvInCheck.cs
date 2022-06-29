@@ -13,6 +13,7 @@ namespace PFEmvc.dto
         public string CDQM_feedback { get; set; }
         public string TopicOwner_feedback { get; set; }
         public int envId { get; set; }
+        public int teamid { get; set; }
         public List<int> DataIds { get; set; }
     }
 }

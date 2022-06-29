@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PFEmvc;
 using PFEmvc.dto;
 using PFEmvc.Models;
+using PFEmvc.Models.Enums;
 
 namespace PFEmvc.Controllers
 {
@@ -15,12 +17,13 @@ namespace PFEmvc.Controllers
     [Route("api/[controller]")]
     public class checksController : Controller
     {
-        //aa
+        private readonly UserManager<AppUser> _userManager;
         private readonly DbContextApp _context;
 
-        public checksController(DbContextApp context)
+        public checksController(DbContextApp context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
         [HttpGet("getChecks")]
         // GET: Workers
@@ -31,6 +34,8 @@ namespace PFEmvc.Controllers
                 .Include(env => env.Data)
                 .Include(env => env.CheckDetails)
                 .ThenInclude(details => details.Criteria)
+                .ThenInclude(details =>details.Team)
+
                 .ToListAsync());
         }
         [HttpGet]
@@ -93,13 +98,14 @@ namespace PFEmvc.Controllers
 
                     fills.FillMasterDetailsChecks.ToList().ForEach(fill =>
                     {
-                        var checkDetails = _context.CheckDetails.Where(x => x.CheckDetailId == fill.CheckDetailId).FirstOrDefault();
+                        var checkDetails = _context.CheckDetails.Where(x => x.CheckDetailId == fill.CheckDetailId ).FirstOrDefault();
                         if(checkDetails is not null)
                         {
                             checkDetails.CDQM_comments = fill.CDQM_comments;
                             checkDetails.CDQM_feedback = fill.CDQM_feedback;
                             checkDetails.TopicOwner_feedback = fill.TopicOwner_feedback;
                             checkDetails.DQMS_feedback = fill.DQMS_feedback;
+                            checkDetails.status = fill.Status;
                             _context.Update(checkDetails);
                             _context.SaveChanges();
                         }
@@ -143,6 +149,11 @@ namespace PFEmvc.Controllers
         {
             return _context.CheckDetails.Where(i => i.CheckId == id).ToList();
         }
+        [HttpGet("getAllChecksDetails")]
+        public async Task<IActionResult> getAllChecksDetails()
+        {
+            return Ok(await _context.CheckDetails.ToListAsync());
+        }
         [HttpGet("getEnvs")]
         public async Task<IActionResult> Env()
         {
@@ -156,7 +167,33 @@ namespace PFEmvc.Controllers
         [HttpGet("getCriterias")]
         public async Task<IActionResult> Criterias()
         {
-            return Ok(await _context.Criterias.ToListAsync());
+            return Ok(await _context.Criterias.Include(c => c.Team).ToListAsync());
+        }
+        [HttpPost("SendEmailToTopicOwner")]
+        public async Task<IActionResult> SendEmailToTopicOwner(idDTO model)
+        {
+            if (model.idCheck == null || model.idCheckDetails == null)
+            {
+                return NotFound();
+            }
+            var data = _context.Data.Include(c => c.Check).FirstOrDefault(x => x.Check.CheckId == model.idCheck);
+            var checkdetail = _context.CheckDetails.Include(c => c.Criteria).FirstOrDefault(x => x.CheckDetailId == model.idCheckDetails);
+            var NeededUserEmail = "";
+            var users = _userManager.Users.Where(x => x.Team.TeamId == model.teamId).ToList();
+            foreach (var user in users)
+            {
+                var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+                if (role == "TopicOwner")
+                {
+                    NeededUserEmail = user.Email;
+
+                }
+                //var test = _userManager.Users.Include(a => a.Team).FirstOrDefault(x => x.Id == user.Id);
+
+            }
+
+            EmailSender.SendEmailToTopicOwner(data.LEONI_Part, checkdetail.Criteria.Name, NeededUserEmail);
+            return Ok();
         }
 
         [HttpGet("getAllCheckdetailsByCheckId/{id}")]
@@ -168,8 +205,8 @@ namespace PFEmvc.Controllers
                 return NotFound();
             }
 
-                var checkDetails = _context.CheckDetails
-                     .OrderBy(team => team.CheckId).Include(c => c.Criteria).Include(c => c.Check).Where(team =>team.CheckId==id);
+            var checkDetails = _context.CheckDetails
+               .OrderBy(team => team.CheckId).Include(c => c.Criteria).Include(c => c.Check).Include(c => c.Criteria.Team).Where(team =>team.CheckId==id);
                 
 
             
@@ -182,6 +219,35 @@ namespace PFEmvc.Controllers
             //}
 
             return Ok(checkDetails);
+        }
+        [HttpGet("getAllCheckdetailsByTeamId/{idCheck}/{idTeam}")]
+       
+        public async Task<IActionResult> getAllCheckdetailsByTeamIdAndCheckId(int? idCheck,int? idTeam)
+        {
+            if (idCheck == null || idTeam==null)
+            {
+                return NotFound();
+            }
+
+            var checkDetails = _context.CheckDetails
+               .OrderBy(team => team.CheckId).Include(c => c.Criteria).Include(c => c.Criteria.Team).Where(team => team.Criteria.Team.TeamId == idTeam).Where(team => team.CheckId == idCheck);
+
+
+            return Ok(checkDetails);
+        }
+        [HttpGet("getAllChecksByTeamId/{idTeam}")]
+        
+        public async Task<IActionResult> getAllChecksByTeamId(int idTeam)
+        {
+            if ( idTeam == null)
+            {
+                return NotFound();
+            }
+
+            var checks = _context.Checks.Include(x => x.CheckDetails).ThenInclude(x => x.Criteria).ThenInclude(x => x.Team).ToList();
+            var neededChecks= checks.Where(x => x.CheckDetails.Any(y => y.Criteria.Team.TeamId == idTeam));
+            List<NeededStatusOfChecks> list = neededChecks.Select(x => new check { });
+            return Ok();
         }
 
         [HttpGet("getCheckById/{id}")]
@@ -218,7 +284,7 @@ namespace PFEmvc.Controllers
                 ch.DQMS_feedback = check.DQMS_feedback;
                 ch.TopicOwner_feedback = check.TopicOwner_feedback;
 
-                ch.Status = "en train de";
+                ch.Status = "Not Passed";
                 ch.Data = new();
                 for (int i = 0; i < check.DataIds.Count; i++)
                 {
@@ -238,11 +304,11 @@ namespace PFEmvc.Controllers
                 {
                     CheckDetails checkDetails = new()
                     {
-                        CDQM_comments = "A remplir",
-                        CDQM_feedback = "A remplir",
-                        DQMS_feedback = "A remplir",
-                        status = "A remplir",
-                        TopicOwner_feedback = "A remplir",
+                        CDQM_comments = "Need to be filled",
+                        CDQM_feedback = "Need to be filled",
+                        DQMS_feedback = "Need to be filled",
+                        status = "Need to be filled",
+                        TopicOwner_feedback = "Need to be filled",
                         Criteria = criteria,    
                         CheckId = ch.CheckId
                     };

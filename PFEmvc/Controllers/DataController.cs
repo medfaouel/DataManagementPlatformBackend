@@ -75,15 +75,15 @@ namespace PFEmvc.Controllers
          
                 check check = new()
                 {
-                    CheckAddress = " A remplir",
-                    Status = "en train de",
+                    CheckAddress = "Need to be filled",
+                    Status = "Not Passed",
                     CheckDetails = criterias.Select(criteria => new CheckDetails()
                     {
                         Criteria = criteria,
-                        CDQM_comments = " A remplir",
-                        CDQM_feedback = " A remplir",
-                        DQMS_feedback = " A remplir",
-                        TopicOwner_feedback = " A remplir"
+                        CDQM_comments = "Need to be filled",
+                        CDQM_feedback = "Need to be filled",
+                        DQMS_feedback = "Need to be filled",
+                        TopicOwner_feedback = "Need to be filled",
                     }).ToList(),
                     Data = new List<Data>()
                         {
@@ -109,15 +109,16 @@ namespace PFEmvc.Controllers
                
                 check check = new()
                 {
-                    CheckAddress = " A remplir",
-                    Status = "en train de",
+                    CheckAddress = "Need to be filled",
+                    Status = "Not Passed",
                     CheckDetails = criterias.Select(criteria => new CheckDetails()
                     {
                         Criteria = criteria,
-                        CDQM_comments = " A remplir",
-                        CDQM_feedback = " A remplir",
-                        DQMS_feedback = " A remplir",
-                        TopicOwner_feedback = " A remplir"
+                        CDQM_comments = "Need to be filled",
+                        CDQM_feedback = "Need to be filled",
+                        DQMS_feedback = "Need to be filled",
+                        TopicOwner_feedback = "Need to be filled",
+                        status= "Not Passed",
                     }).ToList(),
                     Data = new List<Data>()
                         {
