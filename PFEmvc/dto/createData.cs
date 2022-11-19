@@ -4,6 +4,7 @@ namespace PFEmvc.dto
 {
     public class createData
     {
+        public int teamid { get; set; }
         public int DataId { get; set; }
         public int checkId { get; set; }
         public List<int> criteriaIds { get; set; }

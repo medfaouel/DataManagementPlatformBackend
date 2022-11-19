@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PFEmvc.Migrations
 {
-    public partial class restorationofdatabasev2 : Migration
+    public partial class update : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -19,54 +19,6 @@ namespace PFEmvc.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetUsers",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Data",
-                columns: table => new
-                {
-                    DataId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Month = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LEONI_Part = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Part_Request = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Context = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Supplier = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Fors_Material_Group = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LEONI_Part_Classification = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Data", x => x.DataId);
                 });
 
             migrationBuilder.CreateTable(
@@ -102,6 +54,164 @@ namespace PFEmvc.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Teams",
+                columns: table => new
+                {
+                    TeamId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeamName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TeamDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    environmentEnvId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Teams", x => x.TeamId);
+                    table.ForeignKey(
+                        name: "FK_Teams_Environments_environmentEnvId",
+                        column: x => x.environmentEnvId,
+                        principalTable: "Environments",
+                        principalColumn: "EnvId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Administrators",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Job = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TeamId = table.Column<int>(type: "int", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LoginStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Administrators", x => x.UserId);
+                    table.ForeignKey(
+                        name: "FK_Administrators_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUsers",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TeamId = table.Column<int>(type: "int", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUsers_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Checks",
+                columns: table => new
+                {
+                    CheckId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CheckAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CDQM_comments = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DQMS_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CDQM_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TopicOwner_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TeamId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Checks", x => x.CheckId);
+                    table.ForeignKey(
+                        name: "FK_Checks_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Criterias",
+                columns: table => new
+                {
+                    CrtId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TeamId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Criterias", x => x.CrtId);
+                    table.ForeignKey(
+                        name: "FK_Criterias_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Workers",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeamId = table.Column<int>(type: "int", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LoginStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Workers", x => x.UserId);
+                    table.ForeignKey(
+                        name: "FK_Workers_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -190,146 +300,28 @@ namespace PFEmvc.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Checks",
+                name: "Data",
                 columns: table => new
                 {
-                    CheckId = table.Column<int>(type: "int", nullable: false)
+                    DataId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CheckAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CDQM_comments = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DQMS_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CDQM_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TopicOwner_feedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DataIdentity = table.Column<int>(type: "int", nullable: false),
-                    DataId = table.Column<int>(type: "int", nullable: true),
-                    environmentEnvId = table.Column<int>(type: "int", nullable: true)
+                    Month = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LEONI_Part = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Part_Request = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Context = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Supplier = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Fors_Material_Group = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LEONI_Part_Classification = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CheckId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Checks", x => x.CheckId);
+                    table.PrimaryKey("PK_Data", x => x.DataId);
                     table.ForeignKey(
-                        name: "FK_Checks_Data_DataId",
-                        column: x => x.DataId,
-                        principalTable: "Data",
-                        principalColumn: "DataId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Checks_Environments_environmentEnvId",
-                        column: x => x.environmentEnvId,
-                        principalTable: "Environments",
-                        principalColumn: "EnvId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Teams",
-                columns: table => new
-                {
-                    TeamId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TeamName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TeamDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    environmentEnvId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Teams", x => x.TeamId);
-                    table.ForeignKey(
-                        name: "FK_Teams_Environments_environmentEnvId",
-                        column: x => x.environmentEnvId,
-                        principalTable: "Environments",
-                        principalColumn: "EnvId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Administrators",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Job = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TeamId = table.Column<int>(type: "int", nullable: true),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoginStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Administrators", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_Administrators_Teams_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "Teams",
-                        principalColumn: "TeamId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Criterias",
-                columns: table => new
-                {
-                    CrtId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CheckId = table.Column<int>(type: "int", nullable: true),
-                    TeamId = table.Column<int>(type: "int", nullable: true),
-                    DataId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Criterias", x => x.CrtId);
-                    table.ForeignKey(
-                        name: "FK_Criterias_Checks_CheckId",
+                        name: "FK_Data_Checks_CheckId",
                         column: x => x.CheckId,
                         principalTable: "Checks",
                         principalColumn: "CheckId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Criterias_Data_DataId",
-                        column: x => x.DataId,
-                        principalTable: "Data",
-                        principalColumn: "DataId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Criterias_Teams_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "Teams",
-                        principalColumn: "TeamId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Workers",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TeamId = table.Column<int>(type: "int", nullable: true),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoginStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Workers", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_Workers_Teams_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "Teams",
-                        principalColumn: "TeamId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -402,6 +394,11 @@ namespace PFEmvc.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_TeamId",
+                table: "AspNetUsers",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
@@ -419,31 +416,19 @@ namespace PFEmvc.Migrations
                 column: "CriteriaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Checks_DataId",
+                name: "IX_Checks_TeamId",
                 table: "Checks",
-                column: "DataId",
-                unique: true,
-                filter: "[DataId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Checks_environmentEnvId",
-                table: "Checks",
-                column: "environmentEnvId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Criterias_CheckId",
-                table: "Criterias",
-                column: "CheckId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Criterias_DataId",
-                table: "Criterias",
-                column: "DataId");
+                column: "TeamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Criterias_TeamId",
                 table: "Criterias",
                 column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Data_CheckId",
+                table: "Data",
+                column: "CheckId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Teams_environmentEnvId",
@@ -480,6 +465,9 @@ namespace PFEmvc.Migrations
                 name: "CheckDetails");
 
             migrationBuilder.DropTable(
+                name: "Data");
+
+            migrationBuilder.DropTable(
                 name: "Workers");
 
             migrationBuilder.DropTable(
@@ -496,9 +484,6 @@ namespace PFEmvc.Migrations
 
             migrationBuilder.DropTable(
                 name: "Teams");
-
-            migrationBuilder.DropTable(
-                name: "Data");
 
             migrationBuilder.DropTable(
                 name: "Environments");

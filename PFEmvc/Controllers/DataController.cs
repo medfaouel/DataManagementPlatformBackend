@@ -72,9 +72,10 @@ namespace PFEmvc.Controllers
                 _context.Add(d);
                 await _context.SaveChangesAsync();
                 List<Criterias> criterias = _context.Criterias.ToList();
-         
+
                 check check = new()
                 {
+                    Team = _context.Teams.FirstOrDefault(x => x.TeamId == data.teamid),
                     CheckAddress = "Need to be filled",
                     Status = "Not Passed",
                     CheckDetails = criterias.Select(criteria => new CheckDetails()
@@ -103,12 +104,13 @@ namespace PFEmvc.Controllers
             var dataList = data.CreatedDataFromExcel.Select(d => d.ToEntity()).ToList();
             _context.AddRange(dataList);
             await _context.SaveChangesAsync();
-            dataList.ForEach(data =>
+            dataList.ForEach(bruh =>
             {
                 List<Criterias> criterias = _context.Criterias.ToList();
                
                 check check = new()
                 {
+                    Team = _context.Teams.FirstOrDefault(x => x.TeamId == data.teamid),
                     CheckAddress = "Need to be filled",
                     Status = "Not Passed",
                     CheckDetails = criterias.Select(criteria => new CheckDetails()
@@ -122,7 +124,7 @@ namespace PFEmvc.Controllers
                     }).ToList(),
                     Data = new List<Data>()
                         {
-                            data
+                            bruh
                         }
                 };
 
@@ -148,7 +150,7 @@ namespace PFEmvc.Controllers
             {
                 try
                 {
-                    Data d = _context.Data.FirstOrDefault(aa => aa.DataId == id);
+                    Data d = _context.Data.FirstOrDefault(aa => aa.DataId == id);           
                     d.Context = data.Context;
                     d.Fors_Material_Group = data.Fors_Material_Group;
                     d.LEONI_Part = data.LEONI_Part;

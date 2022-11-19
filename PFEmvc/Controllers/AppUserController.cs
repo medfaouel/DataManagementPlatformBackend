@@ -143,7 +143,7 @@ namespace PFEmvc.Controllers
                     return await Task.FromResult(new ResponseModel(ResponseCode.Error, "Role does not exist", null));
                 }
                 var team = _context.Teams.FirstOrDefault(x => x.TeamId == model.Team.TeamId);
-                var user = new AppUser() { FirstName = model.FirstName, Email = model.Email, LastName = model.LastName, UserName = model.Email, DateCreated = DateTime.UtcNow, DateModified = DateTime.UtcNow,Team=team };
+                var user = new AppUser() { FirstName = model.FirstName, Email = model.Email, LastName = model.LastName, UserName = model.UserName, DateCreated = DateTime.UtcNow, DateModified = DateTime.UtcNow,Team=team };
                 var generatedPassword = RandomPassword(8);
                 var result = await _userManager.CreateAsync(user, generatedPassword);
 
@@ -283,8 +283,8 @@ namespace PFEmvc.Controllers
                 if (ModelState.IsValid)
                 {
 
-
-                    var result = await _SignInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
+                    var userrr = await _userManager.FindByEmailAsync(model.Email);
+                    var result = await _SignInManager.PasswordSignInAsync(userrr.UserName, model.Password, false, false);
                     if (result.Succeeded)
                     {
                         var appUser = await _userManager.FindByEmailAsync(model.Email);

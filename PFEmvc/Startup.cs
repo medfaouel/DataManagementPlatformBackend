@@ -31,6 +31,7 @@ namespace PFEmvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.Configure<SMTPConfigModel>(Configuration.GetSection("SMTPConfig"));
             services.Configure<JWTConfig>(Configuration.GetSection("ApplicationSettings"));
             services.AddControllersWithViews();
@@ -64,10 +65,12 @@ namespace PFEmvc
             });
             services.AddDbContext<DbContextApp>(options => options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
             services.AddIdentity<AppUser, IdentityRole>(opt =>
-            
             {
-                
+                opt.User.RequireUniqueEmail = true;
+                opt.SignIn.RequireConfirmedEmail = true;
             }).AddEntityFrameworkStores<DbContextApp>().AddDefaultTokenProviders();
+            services.Configure<PasswordHasherOptions>(options =>
+      options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
             services.AddCors(opt =>
             {
                 opt.AddPolicy(_loginOrigin, builder =>

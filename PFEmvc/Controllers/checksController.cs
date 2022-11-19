@@ -235,19 +235,46 @@ namespace PFEmvc.Controllers
 
             return Ok(checkDetails);
         }
-        [HttpGet("getAllChecksByTeamId/{idTeam}")]
+        [HttpGet("DashboardTeamDetails")]
         
-        public async Task<IActionResult> getAllChecksByTeamId(int idTeam)
+        public async Task<IActionResult> DashboardTeamDetails()
         {
-            if ( idTeam == null)
-            {
-                return NotFound();
-            }
+       
 
-            var checks = _context.Checks.Include(x => x.CheckDetails).ThenInclude(x => x.Criteria).ThenInclude(x => x.Team).ToList();
-            var neededChecks= checks.Where(x => x.CheckDetails.Any(y => y.Criteria.Team.TeamId == idTeam));
-            List<NeededStatusOfChecks> list = neededChecks.Select(x => new check { });
-            return Ok();
+            var checks = _context.Checks.Include(x => x.Team).ToList();
+            Dictionary<string,List<string>> dict = new Dictionary<string, List<string>>();
+            
+            foreach (var check in checks)
+
+            {
+                try
+                {
+                    var checksName = check.Team?.TeamName;
+                    if (checksName is not null && dict.Keys.Contains(checksName))
+                    {
+                        if (dict[check.Team.TeamName] is not null && dict[check.Team.TeamName].Any())
+                        {
+                            dict[check.Team.TeamName].Add(check.Status);
+                        }
+
+                        else
+                        {
+                            dict[check.Team.TeamName] = new List<string>() { check.Status };
+                        }
+                    }
+                    else
+                    {
+                        dict[check.Team.TeamName] = new List<string>() { check.Status };
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    throw;
+                }
+
+            }
+            return Ok(dict);
         }
 
         [HttpGet("getCheckById/{id}")]
@@ -279,11 +306,8 @@ namespace PFEmvc.Controllers
             {
                 check ch = new();
                 ch.CheckAddress = check.CheckAddress;
-                ch.CDQM_comments = check.CDQM_comments;
-                ch.CDQM_feedback = check.CDQM_feedback;
-                ch.DQMS_feedback = check.DQMS_feedback;
                 ch.TopicOwner_feedback = check.TopicOwner_feedback;
-
+                ch.Team = _context.Teams.FirstOrDefault(x => x.TeamId == check.teamid);
                 ch.Status = "Not Passed";
                 ch.Data = new();
                 for (int i = 0; i < check.DataIds.Count; i++)
@@ -337,6 +361,7 @@ namespace PFEmvc.Controllers
                 try
                 {
                     var ch = _context.Checks.First(aa => aa.CheckId == id);
+                    ch.Team = _context.Teams.FirstOrDefault(x => x.TeamId == check.teamid);
                     ch.CheckAddress = check.CheckAddress;
                     
                     ch.Status = check.status;

@@ -10,8 +10,8 @@ using PFEmvc;
 namespace PFEmvc.Migrations
 {
     [DbContext(typeof(DbContextApp))]
-    [Migration("20220504211256_relation")]
-    partial class relation
+    [Migration("20221030231732_update")]
+    partial class update
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -209,6 +209,9 @@ namespace PFEmvc.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -225,6 +228,8 @@ namespace PFEmvc.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("TeamId");
 
                     b.ToTable("AspNetUsers");
                 });
@@ -273,9 +278,6 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("DataId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -288,8 +290,6 @@ namespace PFEmvc.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CrtId");
-
-                    b.HasIndex("DataId");
 
                     b.HasIndex("TeamId");
 
@@ -419,16 +419,18 @@ namespace PFEmvc.Migrations
                     b.Property<string>("DQMS_feedback")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DataIdentity")
-                        .HasColumnType("int");
-
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("int");
 
                     b.Property<string>("TopicOwner_feedback")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("CheckId");
+
+                    b.HasIndex("TeamId");
 
                     b.ToTable("Checks");
                 });
@@ -559,6 +561,15 @@ namespace PFEmvc.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PFEmvc.Models.AppUser", b =>
+                {
+                    b.HasOne("WebApplicationPFE.Models.Team", "Team")
+                        .WithMany("Users")
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("PFEmvc.Models.CheckDetails", b =>
                 {
                     b.HasOne("PFEmvc.Models.check", "Check")
@@ -576,15 +587,9 @@ namespace PFEmvc.Migrations
 
             modelBuilder.Entity("PFEmvc.Models.Criterias", b =>
                 {
-                    b.HasOne("PFEmvc.Models.Data", "Data")
-                        .WithMany("Criterias")
-                        .HasForeignKey("DataId");
-
                     b.HasOne("WebApplicationPFE.Models.Team", "Team")
                         .WithMany("criterias")
                         .HasForeignKey("TeamId");
-
-                    b.Navigation("Data");
 
                     b.Navigation("Team");
                 });
@@ -607,6 +612,15 @@ namespace PFEmvc.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("PFEmvc.Models.check", b =>
+                {
+                    b.HasOne("WebApplicationPFE.Models.Team", "Team")
+                        .WithMany("checks")
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("WebApplicationPFE.Models.Administrator", b =>
                 {
                     b.HasOne("WebApplicationPFE.Models.Team", null)
@@ -621,11 +635,6 @@ namespace PFEmvc.Migrations
                         .HasForeignKey("environmentEnvId");
 
                     b.Navigation("environment");
-                });
-
-            modelBuilder.Entity("PFEmvc.Models.Data", b =>
-                {
-                    b.Navigation("Criterias");
                 });
 
             modelBuilder.Entity("PFEmvc.Models.Environment", b =>
@@ -644,7 +653,11 @@ namespace PFEmvc.Migrations
                 {
                     b.Navigation("administrators");
 
+                    b.Navigation("checks");
+
                     b.Navigation("criterias");
+
+                    b.Navigation("Users");
 
                     b.Navigation("workers");
                 });

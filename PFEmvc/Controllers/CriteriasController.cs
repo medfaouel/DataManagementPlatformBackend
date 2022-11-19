@@ -78,11 +78,11 @@ namespace PFEmvc.Controllers
                 {
                     CheckDetails checkDetails = new()
                     {
-                        CDQM_comments = "A remplir",
-                        CDQM_feedback = "A remplir",
-                        DQMS_feedback = "A remplir",
-                        status = "A remplir",
-                        TopicOwner_feedback = "A remplir",
+                        CDQM_comments = "Need to be filled",
+                        CDQM_feedback = "Need to be filled",
+                        DQMS_feedback = "Need to be filled",
+                        status = "Not Passed",
+                        TopicOwner_feedback = "Need to be filled",
                         Criteria = crt,
                         CheckId = check.CheckId
                     };
